@@ -229,6 +229,55 @@
         </div>
     </div>
 
+    <!-- ================= PAGE SELECTION MODAL ================= -->
+    <div id="pageSelectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-100 p-2 rounded-lg text-blue-600">
+                        <i data-lucide="images" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">เลือกหน้าที่ต้องการดาวน์โหลด</h3>
+                        <p class="text-sm text-gray-500 mt-1">เลือกหน้าเพื่อบันทึกเป็นรูปภาพ (JPEG)</p>
+                    </div>
+                </div>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto flex-1">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-medium text-gray-700">รายการหน้าทั้งหมด:</span>
+                    <div class="space-x-2 flex items-center">
+                        <button id="selectAllBtn" class="text-sm text-blue-600 hover:text-blue-800 font-medium px-3 py-1 rounded hover:bg-blue-50 transition-colors">เลือกทั้งหมด</button>
+                        <span class="text-gray-300">|</span>
+                        <button id="deselectAllBtn" class="text-sm text-gray-500 hover:text-gray-700 font-medium px-3 py-1 rounded hover:bg-gray-100 transition-colors">เอาออกทั้งหมด</button>
+                    </div>
+                </div>
+                
+                <!-- Grid for checkboxes -->
+                <div id="pageGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    <!-- Checkboxes จะถูกสร้างด้วย JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+                <button id="cancelModalBtn" class="px-5 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-gray-200 transition-colors">
+                    ยกเลิก
+                </button>
+                <button id="confirmZipBtn" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 flex items-center gap-2 transition-colors">
+                    <i data-lucide="download" class="w-5 h-5"></i> 
+                    <span>บันทึก ZIP</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // เริ่มต้นไอคอน
         lucide.createIcons();
@@ -339,6 +388,15 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const downloadImgBtn = document.getElementById('downloadImgBtn');
         const resetBtn = document.getElementById('resetBtn');
+
+        // Modal Elements
+        const pageSelectModal = document.getElementById('pageSelectModal');
+        const pageGrid = document.getElementById('pageGrid');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const deselectAllBtn = document.getElementById('deselectAllBtn');
+        const confirmZipBtn = document.getElementById('confirmZipBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
 
         let currentFile = null;
         let compressedBlob = null;
@@ -485,23 +543,80 @@
             document.body.removeChild(a); URL.revokeObjectURL(url);
         });
 
-        // จัดการปุ่มดาวน์โหลดรูปภาพเป็น ZIP
-        downloadImgBtn.addEventListener('click', async () => {
+        // เปิด Modal เลือกหน้าเพื่อดาวน์โหลดรูปภาพ
+        downloadImgBtn.addEventListener('click', () => {
             if (compressedImages.length === 0) return;
             
-            const originalText = downloadImgBtn.innerHTML;
-            downloadImgBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>กำลังสร้าง ZIP...</span>';
+            pageGrid.innerHTML = ''; // เคลียร์ของเก่า
+            compressedImages.forEach((_, index) => {
+                const pageNum = index + 1;
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-3 p-3 border border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition-all bg-white';
+                div.innerHTML = `
+                    <input type="checkbox" id="page_${pageNum}" value="${index}" class="page-checkbox w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer pointer-events-none" checked>
+                    <label for="page_${pageNum}" class="text-sm font-medium text-gray-700 cursor-pointer w-full select-none pointer-events-none">หน้า ${pageNum}</label>
+                `;
+                // ทำให้คลิกที่กรอบนอกแล้วติ๊กถูกได้เลย
+                div.addEventListener('click', () => {
+                    const cb = div.querySelector('input');
+                    cb.checked = !cb.checked;
+                    if(cb.checked) {
+                        div.classList.add('bg-blue-50', 'border-blue-300');
+                    } else {
+                        div.classList.remove('bg-blue-50', 'border-blue-300');
+                    }
+                });
+                // สถานะเริ่มต้น (เลือกทุกหน้า)
+                div.classList.add('bg-blue-50', 'border-blue-300');
+                
+                pageGrid.appendChild(div);
+            });
+            
+            pageSelectModal.classList.remove('hidden');
+        });
+
+        // จัดการปุ่มใน Modal
+        closeModalBtn.addEventListener('click', () => pageSelectModal.classList.add('hidden'));
+        cancelModalBtn.addEventListener('click', () => pageSelectModal.classList.add('hidden'));
+
+        selectAllBtn.addEventListener('click', () => {
+            document.querySelectorAll('.page-checkbox').forEach(cb => {
+                cb.checked = true;
+                cb.closest('div').classList.add('bg-blue-50', 'border-blue-300');
+            });
+        });
+
+        deselectAllBtn.addEventListener('click', () => {
+            document.querySelectorAll('.page-checkbox').forEach(cb => {
+                cb.checked = false;
+                cb.closest('div').classList.remove('bg-blue-50', 'border-blue-300');
+            });
+        });
+
+        // ยืนยันสร้าง ZIP เฉพาะหน้าที่เลือก
+        confirmZipBtn.addEventListener('click', async () => {
+            // ดึงค่าหน้าที่ถูกติ๊กเลือกมาเฉพาะ index
+            const selectedIndexes = Array.from(document.querySelectorAll('.page-checkbox:checked')).map(cb => parseInt(cb.value));
+            
+            if (selectedIndexes.length === 0) {
+                alert("กรุณาเลือกอย่างน้อย 1 หน้าเพื่อทำการดาวน์โหลดครับ");
+                return;
+            }
+
+            const originalText = confirmZipBtn.innerHTML;
+            confirmZipBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>กำลังสร้าง ZIP...</span>';
             lucide.createIcons();
-            downloadImgBtn.disabled = true;
+            confirmZipBtn.disabled = true;
 
             try {
                 const zip = new JSZip();
                 const folderName = currentFile.name.replace(/\.[^/.]+$/, "") + "_images";
                 const imgFolder = zip.folder(folderName);
 
-                compressedImages.forEach((dataUrl, index) => {
+                // แพ็กเฉพาะหน้าที่เลือกเข้า ZIP
+                selectedIndexes.forEach(index => {
+                    const dataUrl = compressedImages[index];
                     const base64Data = dataUrl.split(',')[1];
-                    // รันเลขหน้า PDF เช่น page_001.jpg, page_002.jpg
                     const pageNum = String(index + 1).padStart(3, '0');
                     imgFolder.file(`page_${pageNum}.jpg`, base64Data, {base64: true});
                 });
@@ -515,13 +630,15 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+                
+                pageSelectModal.classList.add('hidden'); // ปิด Modal อัตโนมัติเมื่อเสร็จ
             } catch (error) {
                 console.error("ZIP Error:", error);
                 alert("เกิดข้อผิดพลาดในการสร้างไฟล์ ZIP");
             } finally {
-                downloadImgBtn.innerHTML = originalText;
+                confirmZipBtn.innerHTML = originalText;
                 lucide.createIcons();
-                downloadImgBtn.disabled = false;
+                confirmZipBtn.disabled = false;
             }
         });
 
