@@ -66,6 +66,12 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Custom scrollbar for modal */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col">
@@ -213,17 +219,18 @@
                     </div>
 
                     <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                    <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-                        <i data-lucide="download" class="w-5 h-5"></i>
-                        <span>ดาวน์โหลด PDF</span>
-                    </button>
-                    <button id="downloadImgBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed">
-                        <i data-lucide="image" class="w-5 h-5"></i>
-                        <span>ดาวน์โหลดรูป (ZIP)</span>
-                    </button>
-                    <button id="resetBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition-colors">
-                        ย่อไฟล์อื่นต่อ
-                    </button>
+                        <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                            <i data-lucide="download" class="w-5 h-5"></i>
+                            <span>ดาวน์โหลด PDF</span>
+                        </button>
+                        <button id="downloadImgBtn" class="bg-brand-500 hover:bg-brand-600 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed">
+                            <i data-lucide="image" class="w-5 h-5"></i>
+                            <span>ดาวน์โหลดรูป (ZIP)</span>
+                        </button>
+                        <button id="resetBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition-colors">
+                            ย่อไฟล์อื่นต่อ
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -231,16 +238,16 @@
 
     <!-- ================= PAGE SELECTION MODAL ================= -->
     <div id="pageSelectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
             <!-- Modal Header -->
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <div class="flex items-center gap-3">
-                    <div class="bg-blue-100 p-2 rounded-lg text-blue-600">
+                    <div class="bg-brand-100 p-2 rounded-lg text-brand-500">
                         <i data-lucide="images" class="w-6 h-6"></i>
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-gray-900">เลือกหน้าที่ต้องการดาวน์โหลด</h3>
-                        <p class="text-sm text-gray-500 mt-1">เลือกหน้าเพื่อบันทึกเป็นรูปภาพ (JPEG)</p>
+                        <p class="text-sm text-gray-500 mt-1">คลิกที่รูปเพื่อเลือกหน้าที่จะบันทึกเป็นรูปภาพ (JPEG)</p>
                     </div>
                 </div>
                 <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors">
@@ -249,19 +256,19 @@
             </div>
             
             <!-- Modal Body -->
-            <div class="p-6 overflow-y-auto flex-1">
+            <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
                 <div class="flex justify-between items-center mb-4">
                     <span class="text-sm font-medium text-gray-700">รายการหน้าทั้งหมด:</span>
                     <div class="space-x-2 flex items-center">
-                        <button id="selectAllBtn" class="text-sm text-blue-600 hover:text-blue-800 font-medium px-3 py-1 rounded hover:bg-blue-50 transition-colors">เลือกทั้งหมด</button>
+                        <button id="selectAllBtn" class="text-sm text-brand-600 hover:text-brand-800 font-medium px-3 py-1 rounded hover:bg-brand-50 transition-colors">เลือกทั้งหมด</button>
                         <span class="text-gray-300">|</span>
                         <button id="deselectAllBtn" class="text-sm text-gray-500 hover:text-gray-700 font-medium px-3 py-1 rounded hover:bg-gray-100 transition-colors">เอาออกทั้งหมด</button>
                     </div>
                 </div>
                 
-                <!-- Grid for checkboxes -->
-                <div id="pageGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    <!-- Checkboxes จะถูกสร้างด้วย JavaScript -->
+                <!-- Grid for Image Previews -->
+                <div id="pageGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Checkboxes with Images จะถูกสร้างด้วย JavaScript -->
                 </div>
             </div>
             
@@ -270,7 +277,7 @@
                 <button id="cancelModalBtn" class="px-5 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-gray-200 transition-colors">
                     ยกเลิก
                 </button>
-                <button id="confirmZipBtn" class="px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 flex items-center gap-2 transition-colors">
+                <button id="confirmZipBtn" class="px-5 py-2.5 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 flex items-center gap-2 transition-colors">
                     <i data-lucide="download" class="w-5 h-5"></i> 
                     <span>บันทึก ZIP</span>
                 </button>
@@ -482,13 +489,13 @@
                     canvas.width = renderViewport.width; canvas.height = renderViewport.height;
 
                     await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
-                const imgData = canvas.toDataURL('image/jpeg', settings.jpegQuality);
+                    const imgData = canvas.toDataURL('image/jpeg', settings.jpegQuality);
 
-                // เก็บรูปภาพแต่ละหน้าไว้สำหรับ Export เป็น ZIP
-                compressedImages.push(imgData);
+                    // เก็บรูปภาพแต่ละหน้าไว้สำหรับ Export เป็น ZIP
+                    compressedImages.push(imgData);
 
-                const orientation = unscaledViewport.width > unscaledViewport.height ? 'l' : 'p';
-                const format = [unscaledViewport.width, unscaledViewport.height];
+                    const orientation = unscaledViewport.width > unscaledViewport.height ? 'l' : 'p';
+                    const format = [unscaledViewport.width, unscaledViewport.height];
 
                     if (i === 1) {
                         newPdf = new jsPDF({ orientation: orientation, unit: 'pt', format: format });
@@ -548,26 +555,29 @@
             if (compressedImages.length === 0) return;
             
             pageGrid.innerHTML = ''; // เคลียร์ของเก่า
-            compressedImages.forEach((_, index) => {
+            
+            compressedImages.forEach((imgData, index) => {
                 const pageNum = index + 1;
                 const div = document.createElement('div');
-                div.className = 'flex items-center gap-3 p-3 border border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 cursor-pointer transition-all bg-white';
+                // คลาสเริ่มต้น (ถูกเลือก) มีกรอบสีแดง (แบรนด์) ชัดเจน
+                div.className = 'page-card relative flex flex-col p-2 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md bg-brand-50 border-brand-500';
+                
                 div.innerHTML = `
-                    <input type="checkbox" id="page_${pageNum}" value="${index}" class="page-checkbox w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer pointer-events-none" checked>
-                    <label for="page_${pageNum}" class="text-sm font-medium text-gray-700 cursor-pointer w-full select-none pointer-events-none">หน้า ${pageNum}</label>
+                    <div class="relative w-full aspect-[1/1.4] bg-gray-100 rounded-lg overflow-hidden border border-gray-200 mb-3 pointer-events-none">
+                        <img src="${imgData}" class="w-full h-full object-contain pointer-events-none" alt="หน้า ${pageNum}">
+                    </div>
+                    <div class="flex items-center justify-center gap-2 pointer-events-none">
+                        <input type="checkbox" id="page_${pageNum}" value="${index}" class="page-checkbox w-5 h-5 text-brand-600 rounded border-gray-300 focus:ring-brand-500 pointer-events-none" checked>
+                        <label for="page_${pageNum}" class="text-sm font-medium text-gray-800 select-none pointer-events-none">หน้า ${pageNum}</label>
+                    </div>
                 `;
-                // ทำให้คลิกที่กรอบนอกแล้วติ๊กถูกได้เลย
+                
+                // อัปเดตสไตล์เมื่อมีการคลิกเลือก/ยกเลิก
                 div.addEventListener('click', () => {
                     const cb = div.querySelector('input');
                     cb.checked = !cb.checked;
-                    if(cb.checked) {
-                        div.classList.add('bg-blue-50', 'border-blue-300');
-                    } else {
-                        div.classList.remove('bg-blue-50', 'border-blue-300');
-                    }
+                    updateCardStyle(div, cb.checked);
                 });
-                // สถานะเริ่มต้น (เลือกทุกหน้า)
-                div.classList.add('bg-blue-50', 'border-blue-300');
                 
                 pageGrid.appendChild(div);
             });
@@ -575,21 +585,34 @@
             pageSelectModal.classList.remove('hidden');
         });
 
+        // ฟังก์ชันช่วยสลับสีการ์ด
+        function updateCardStyle(cardDiv, isChecked) {
+            if(isChecked) {
+                cardDiv.classList.add('bg-brand-50', 'border-brand-500');
+                cardDiv.classList.remove('bg-white', 'border-gray-100', 'opacity-70');
+            } else {
+                cardDiv.classList.remove('bg-brand-50', 'border-brand-500');
+                cardDiv.classList.add('bg-white', 'border-gray-100', 'opacity-70');
+            }
+        }
+
         // จัดการปุ่มใน Modal
         closeModalBtn.addEventListener('click', () => pageSelectModal.classList.add('hidden'));
         cancelModalBtn.addEventListener('click', () => pageSelectModal.classList.add('hidden'));
 
         selectAllBtn.addEventListener('click', () => {
-            document.querySelectorAll('.page-checkbox').forEach(cb => {
+            document.querySelectorAll('.page-card').forEach(card => {
+                const cb = card.querySelector('.page-checkbox');
                 cb.checked = true;
-                cb.closest('div').classList.add('bg-blue-50', 'border-blue-300');
+                updateCardStyle(card, true);
             });
         });
 
         deselectAllBtn.addEventListener('click', () => {
-            document.querySelectorAll('.page-checkbox').forEach(cb => {
+            document.querySelectorAll('.page-card').forEach(card => {
+                const cb = card.querySelector('.page-checkbox');
                 cb.checked = false;
-                cb.closest('div').classList.remove('bg-blue-50', 'border-blue-300');
+                updateCardStyle(card, false);
             });
         });
 
@@ -629,7 +652,6 @@
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                URL.revokeObjectURL(url);
                 
                 pageSelectModal.classList.add('hidden'); // ปิด Modal อัตโนมัติเมื่อเสร็จ
             } catch (error) {
