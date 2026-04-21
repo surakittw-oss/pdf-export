@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Compressor - ย่อขนาดไฟล์ PDF</title>
+    <title>THE STANDARD - PDF Compressor</title>
     
     <!-- Google Fonts: Prompt -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,156 +49,273 @@
     <!-- jsPDF สำหรับสร้างไฟล์ PDF ใหม่ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
+    <!-- Google Identity Services (Google API) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <style>
         body { font-family: 'Prompt', sans-serif; }
         .drop-zone { transition: all 0.2s ease-in-out; }
-        /* เปลี่ยนสีตอน Hover/Drag ให้เข้ากับ CI */
         .drop-zone.active { border-color: #e62227; background-color: #fdf2f2; }
-        
-        /* Loading Spinner Color */
         .spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
+            width: 36px; height: 36px; border-radius: 50%;
             border-left-color: #e62227;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen text-gray-800">
+<body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col">
 
-    <div class="max-w-3xl mx-auto pt-12 px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="text-center mb-10">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
-                <i data-lucide="file-down" class="w-8 h-8 text-brand-500"></i>
-                ระบบย่อขนาดไฟล์ PDF
-            </h1>
-            <p class="text-gray-600">ลดขนาดไฟล์เอกสารของคุณง่ายๆ ปลอดภัย 100% (ทำงานบนเครื่องของคุณ ไม่มีการอัปโหลดสู่เซิร์ฟเวอร์)</p>
-        </div>
-
-        <!-- Main Card -->
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100">
+    <!-- ================= LOGIN PAGE ================= -->
+    <div id="loginPage" class="flex-1 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100 max-w-md w-full text-center">
+            <div class="w-16 h-16 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="shield-check" class="w-8 h-8"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">เข้าสู่ระบบ</h1>
+            <p class="text-gray-500 mb-8 text-sm">ระบบจำกัดสิทธิ์เฉพาะผู้ใช้อีเมลองค์กร<br/><span class="font-medium text-gray-800">@thestandard.co</span> เท่านั้น</p>
             
-            <!-- Upload Zone -->
-            <div id="dropZone" class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer hover:bg-gray-50 mb-6">
-                <input type="file" id="fileInput" accept="application/pdf" class="hidden">
-                <div class="flex flex-col items-center justify-center space-y-4">
-                    <div class="bg-brand-100 p-4 rounded-full text-brand-500">
-                        <i data-lucide="upload-cloud" class="w-10 h-10"></i>
+            <!-- จุดที่จะให้ Google Render ปุ่ม Login อัตโนมัติ -->
+            <div id="googleBtnDiv" class="flex justify-center w-full min-h-[40px]"></div>
+
+            <!-- Error Message Box -->
+            <div id="loginError" class="hidden mt-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm flex items-start text-left">
+                <i data-lucide="alert-circle" class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5"></i>
+                <span id="loginErrorText">ขออภัย คุณไม่ได้รับสิทธิ์เข้าใช้งาน กรุณาใช้อีเมล @thestandard.co</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MAIN APP PAGE ================= -->
+    <div id="appPage" class="hidden flex-1 flex flex-col">
+        <!-- Top Navbar -->
+        <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+            <div class="max-w-5xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="file-down" class="w-6 h-6 text-brand-500"></i>
+                    <span class="font-bold text-gray-900 text-lg">PDF Compressor</span>
+                </div>
+                <div class="flex items-center gap-4 bg-gray-50 px-4 py-1.5 rounded-full border border-gray-100">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span id="userEmailDisplay" class="text-sm font-medium text-gray-700"></span>
+                    <div class="h-4 w-px bg-gray-300 mx-1"></div>
+                    <button id="logoutBtn" class="text-sm text-brand-600 hover:text-brand-800 font-medium transition-colors">ออกจากระบบ</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-3xl mx-auto pt-10 px-4 sm:px-6 lg:px-8 w-full pb-12">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">ระบบย่อขนาดไฟล์ PDF</h2>
+                <p class="text-gray-600">ลดขนาดไฟล์เอกสารของคุณง่ายๆ (ทำงานบนเครื่องของคุณ ไม่มีการอัปโหลดออกสู่ภายนอก)</p>
+            </div>
+
+            <!-- Main Card -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100">
+                <!-- Upload Zone -->
+                <div id="dropZone" class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer hover:bg-gray-50 mb-6">
+                    <input type="file" id="fileInput" accept="application/pdf" class="hidden">
+                    <div class="flex flex-col items-center justify-center space-y-4">
+                        <div class="bg-brand-100 p-4 rounded-full text-brand-500">
+                            <i data-lucide="upload-cloud" class="w-10 h-10"></i>
+                        </div>
+                        <div>
+                            <p class="text-lg font-medium text-gray-700">คลิกที่นี่เพื่อเลือกไฟล์ PDF</p>
+                            <p class="text-sm text-gray-500 mt-1">หรือลากไฟล์ PDF มาวางตรงนี้</p>
+                        </div>
                     </div>
+                </div>
+
+                <!-- File Info -->
+                <div id="fileInfo" class="hidden bg-brand-50 border border-brand-100 rounded-lg p-4 mb-6 flex items-center justify-between">
+                    <div class="flex items-center space-x-3 truncate">
+                        <i data-lucide="file-text" class="w-6 h-6 text-brand-500 flex-shrink-0"></i>
+                        <div class="truncate">
+                            <p id="fileName" class="font-medium text-sm text-gray-800 truncate"></p>
+                            <p id="fileSize" class="text-xs text-gray-500"></p>
+                        </div>
+                    </div>
+                    <button id="removeFileBtn" class="text-gray-400 hover:text-red-500 p-2 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Settings & Action -->
+                <div id="actionArea" class="hidden space-y-6">
                     <div>
-                        <p class="text-lg font-medium text-gray-700">คลิกที่นี่เพื่อเลือกไฟล์ PDF</p>
-                        <p class="text-sm text-gray-500 mt-1">หรือลากไฟล์ PDF มาวางตรงนี้</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">เลือกระดับคุณภาพ (มีผลต่อความคมชัดและขนาดไฟล์)</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="quality" value="low" class="peer sr-only">
+                                <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
+                                    <p class="font-medium text-gray-800">ย่อให้เล็กที่สุด</p>
+                                    <p class="text-xs text-gray-500 mt-1">ไฟล์เล็กมาก แต่อาจเบลอเล็กน้อย</p>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="quality" value="medium" class="peer sr-only" checked>
+                                <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
+                                    <p class="font-medium text-gray-800">แนะนำ (สมดุล)</p>
+                                    <p class="text-xs text-gray-500 mt-1">คุณภาพดี ขนาดเล็กลงพอสมควร</p>
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="quality" value="high" class="peer sr-only">
+                                <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
+                                    <p class="font-medium text-gray-800">เน้นความคมชัด</p>
+                                    <p class="text-xs text-gray-500 mt-1">ชัดเจนสุด แต่ไฟล์อาจลดไม่มาก</p>
+                                </div>
+                            </label>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- File Info (Hidden initially) -->
-            <div id="fileInfo" class="hidden bg-brand-50 border border-brand-100 rounded-lg p-4 mb-6 flex items-center justify-between">
-                <div class="flex items-center space-x-3 truncate">
-                    <i data-lucide="file-text" class="w-6 h-6 text-brand-500 flex-shrink-0"></i>
-                    <div class="truncate">
-                        <p id="fileName" class="font-medium text-sm text-gray-800 truncate"></p>
-                        <p id="fileSize" class="text-xs text-gray-500"></p>
-                    </div>
-                </div>
-                <button id="removeFileBtn" class="text-gray-400 hover:text-red-500 p-2 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <!-- Settings & Action (Hidden initially) -->
-            <div id="actionArea" class="hidden space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">เลือกระดับคุณภาพ (มีผลต่อความคมชัดและขนาดไฟล์)</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="quality" value="low" class="peer sr-only">
-                            <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
-                                <p class="font-medium text-gray-800">ย่อให้เล็กที่สุด</p>
-                                <p class="text-xs text-gray-500 mt-1">ไฟล์เล็กมาก แต่อาจเบลอเล็กน้อย</p>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="quality" value="medium" class="peer sr-only" checked>
-                            <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
-                                <p class="font-medium text-gray-800">แนะนำ (สมดุล)</p>
-                                <p class="text-xs text-gray-500 mt-1">คุณภาพดี ขนาดเล็กลงพอสมควร</p>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="quality" value="high" class="peer sr-only">
-                            <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
-                                <p class="font-medium text-gray-800">เน้นความคมชัด</p>
-                                <p class="text-xs text-gray-500 mt-1">ชัดเจนสุด แต่ไฟล์อาจจะลดไม่มาก</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <button id="compressBtn" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-                    <i data-lucide="zap" class="w-5 h-5"></i>
-                    <span>เริ่มย่อขนาดไฟล์</span>
-                </button>
-            </div>
-
-            <!-- Processing / Progress Area -->
-            <div id="progressArea" class="hidden py-8 text-center">
-                <div class="flex justify-center mb-4">
-                    <div class="spinner"></div>
-                </div>
-                <h3 class="text-lg font-medium text-gray-800 mb-2">กำลังประมวลผล...</h3>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2 max-w-md mx-auto overflow-hidden">
-                    <div id="progressBar" class="bg-brand-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-                <p id="progressText" class="text-sm text-gray-500">กำลังเตรียมไฟล์...</p>
-                <p class="text-xs text-amber-600 mt-4 bg-amber-50 inline-block px-3 py-1 rounded-full border border-amber-100">
-                    <i data-lucide="alert-circle" class="w-3 h-3 inline mr-1"></i>
-                    กรุณาอย่าปิดแท็บนี้จนกว่าจะเสร็จสิ้น
-                </p>
-            </div>
-
-            <!-- Result Area -->
-            <div id="resultArea" class="hidden py-6 text-center">
-                <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="check-circle" class="w-8 h-8"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">ย่อไฟล์สำเร็จ!</h3>
-                
-                <div class="flex justify-center items-center space-x-4 text-sm mb-6">
-                    <div class="bg-gray-100 px-4 py-2 rounded-lg">
-                        <p class="text-gray-500 text-xs">ขนาดเดิม</p>
-                        <p id="oldSizeTxt" class="font-medium line-through text-gray-400"></p>
-                    </div>
-                    <i data-lucide="arrow-right" class="w-5 h-5 text-gray-400"></i>
-                    <div class="bg-green-50 px-4 py-2 rounded-lg border border-green-200">
-                        <p class="text-green-600 text-xs font-medium">ขนาดใหม่</p>
-                        <p id="newSizeTxt" class="font-bold text-green-700"></p>
-                    </div>
-                </div>
-
-                <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                    <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-                        <i data-lucide="download" class="w-5 h-5"></i>
-                        <span>ดาวน์โหลดไฟล์</span>
-                    </button>
-                    <button id="resetBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition-colors">
-                        ย่อไฟล์อื่นต่อ
+                    <button id="compressBtn" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                        <i data-lucide="zap" class="w-5 h-5"></i>
+                        <span>เริ่มย่อขนาดไฟล์</span>
                     </button>
                 </div>
-            </div>
 
+                <!-- Processing / Progress Area -->
+                <div id="progressArea" class="hidden py-8 text-center">
+                    <div class="flex justify-center mb-4"><div class="spinner"></div></div>
+                    <h3 class="text-lg font-medium text-gray-800 mb-2">กำลังประมวลผล...</h3>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2 max-w-md mx-auto overflow-hidden">
+                        <div id="progressBar" class="bg-brand-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <p id="progressText" class="text-sm text-gray-500">กำลังเตรียมไฟล์...</p>
+                    <p class="text-xs text-amber-600 mt-4 bg-amber-50 inline-block px-3 py-1 rounded-full border border-amber-100">
+                        <i data-lucide="alert-circle" class="w-3 h-3 inline mr-1"></i> กรุณาอย่าปิดแท็บนี้จนกว่าจะเสร็จสิ้น
+                    </p>
+                </div>
+
+                <!-- Result Area -->
+                <div id="resultArea" class="hidden py-6 text-center">
+                    <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="check-circle" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">ย่อไฟล์สำเร็จ!</h3>
+                    
+                    <div class="flex justify-center items-center space-x-4 text-sm mb-6">
+                        <div class="bg-gray-100 px-4 py-2 rounded-lg">
+                            <p class="text-gray-500 text-xs">ขนาดเดิม</p>
+                            <p id="oldSizeTxt" class="font-medium line-through text-gray-400"></p>
+                        </div>
+                        <i data-lucide="arrow-right" class="w-5 h-5 text-gray-400"></i>
+                        <div class="bg-green-50 px-4 py-2 rounded-lg border border-green-200">
+                            <p class="text-green-600 text-xs font-medium">ขนาดใหม่</p>
+                            <p id="newSizeTxt" class="font-bold text-green-700"></p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                            <i data-lucide="download" class="w-5 h-5"></i>
+                            <span>ดาวน์โหลดไฟล์</span>
+                        </button>
+                        <button id="resetBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition-colors">
+                            ย่อไฟล์อื่นต่อ
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Initialize Icons
+        // เริ่มต้นไอคอน
         lucide.createIcons();
 
-        // DOM Elements
+        // ---------------------------------------------------------
+        // 1. ระบบ Google Identity Services (Google API)
+        // ---------------------------------------------------------
+        
+        // 🔴🔴🔴 นำ Google Client ID จาก Google Cloud Console มาใส่ที่นี่ 🔴🔴🔴
+        const GOOGLE_CLIENT_ID = "854069548103-cahuv3en92roor6lq7mbcjr9v8v7q50u.apps.googleusercontent.com";
+        const ALLOWED_DOMAIN = "@thestandard.co";
+
+        const loginPage = document.getElementById('loginPage');
+        const appPage = document.getElementById('appPage');
+        const loginError = document.getElementById('loginError');
+        const loginErrorText = document.getElementById('loginErrorText');
+        const userEmailDisplay = document.getElementById('userEmailDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // ฟังก์ชันถอดรหัส JWT Token ที่ได้จาก Google
+        function parseJwt(token) {
+            try {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // เมื่อโหลดหน้าเว็บเสร็จ ให้สร้างปุ่ม Google Login
+        window.onload = function () {
+            if (GOOGLE_CLIENT_ID === "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com") {
+                console.warn("กรุณาใส่ Google Client ID เพื่อใช้งานระบบ Login");
+            }
+
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleCredentialResponse,
+                auto_select: false // ไม่ให้ล็อกอินออโต้ เพื่อให้ผู้ใช้เลือก Account ได้
+            });
+
+            // สร้างปุ่ม Login ใน Div ที่เตรียมไว้
+            google.accounts.id.renderButton(
+                document.getElementById("googleBtnDiv"),
+                { theme: "outline", size: "large", width: 280, text: "signin_with" }
+            );
+        };
+
+        // เมื่อผู้ใช้กดล็อกอินและ Google ส่งข้อมูลกลับมา
+        function handleCredentialResponse(response) {
+            loginError.classList.add('hidden');
+            
+            // ถอดรหัส JWT เพื่อเอาข้อมูลผู้ใช้
+            const responsePayload = parseJwt(response.credential);
+
+            if (responsePayload && responsePayload.email) {
+                const userEmail = responsePayload.email;
+                
+                // ตรวจสอบโดเมนอีเมล
+                if (userEmail.endsWith(ALLOWED_DOMAIN)) {
+                    // ล็อกอินสำเร็จ เข้าสู่หน้าแอป
+                    loginPage.classList.add('hidden');
+                    appPage.classList.remove('hidden');
+                    userEmailDisplay.textContent = userEmail;
+                } else {
+                    // โดเมนไม่ถูกต้อง แจ้งเตือน
+                    loginError.classList.remove('hidden');
+                    loginErrorText.textContent = `ระบบปฏิเสธการเข้าถึง: อีเมล ${userEmail} ไม่ได้รับสิทธิ์ (ต้องเป็น ${ALLOWED_DOMAIN})`;
+                    // สั่งยกเลิกการล็อกอิน
+                    google.accounts.id.disableAutoSelect();
+                }
+            } else {
+                loginError.classList.remove('hidden');
+                loginErrorText.textContent = "เกิดข้อผิดพลาดในการดึงข้อมูลจาก Google";
+            }
+        }
+
+        // ปุ่มออกจากระบบ
+        logoutBtn.addEventListener('click', () => {
+            google.accounts.id.disableAutoSelect(); // ปิดการเชื่อมต่อ
+            loginPage.classList.remove('hidden');
+            appPage.classList.add('hidden');
+            userEmailDisplay.textContent = "";
+            resetUI(); // เคลียร์ไฟล์ที่ย่อค้างไว้
+        });
+
+        // ---------------------------------------------------------
+        // 2. ระบบบีบอัด PDF
+        // ---------------------------------------------------------
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         const fileInfo = document.getElementById('fileInfo');
@@ -219,14 +336,12 @@
         let currentFile = null;
         let compressedBlob = null;
 
-        // Settings mapping (Scale = ความละเอียดตอนเรนเดอร์, Quality = การบีบอัดภาพ JPEG)
         const QUALITY_SETTINGS = {
-            'low': { scale: 1.5, jpegQuality: 0.5 },    // เหมาะกับ text ล้วน, เล็กสุดๆ
-            'medium': { scale: 2.0, jpegQuality: 0.7 }, // สมดุล แนะนำสำหรับเอกสารทั่วไป
-            'high': { scale: 3.0, jpegQuality: 0.85 }   // ชัดเจน ภาพไม่แตก
+            'low': { scale: 1.5, jpegQuality: 0.5 },
+            'medium': { scale: 2.0, jpegQuality: 0.7 },
+            'high': { scale: 3.0, jpegQuality: 0.85 }
         };
 
-        // Utility: Format File Size
         function formatBytes(bytes, decimals = 2) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -236,32 +351,16 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
         }
 
-        // Event Listeners for Drag & Drop
         dropZone.addEventListener('click', () => fileInput.click());
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('active');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('active');
-        });
-
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('active'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('active'));
         dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('active');
-            if (e.dataTransfer.files.length > 0) {
-                handleFileSelect(e.dataTransfer.files[0]);
-            }
+            e.preventDefault(); dropZone.classList.remove('active');
+            if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
         });
-
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFileSelect(e.target.files[0]);
-            }
+            if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
         });
-
         removeFileBtn.addEventListener('click', resetUI);
         resetBtn.addEventListener('click', resetUI);
 
@@ -270,7 +369,6 @@
                 alert('กรุณาเลือกไฟล์ PDF เท่านั้นครับ');
                 return;
             }
-            
             currentFile = file;
             fileName.textContent = file.name;
             fileSize.textContent = formatBytes(file.size);
@@ -282,147 +380,98 @@
         }
 
         function resetUI() {
-            currentFile = null;
-            compressedBlob = null;
-            fileInput.value = '';
-            
-            dropZone.classList.remove('hidden');
-            fileInfo.classList.add('hidden');
-            actionArea.classList.add('hidden');
-            progressArea.classList.add('hidden');
-            resultArea.classList.add('hidden');
-            
-            progressBar.style.width = '0%';
+            currentFile = null; compressedBlob = null; fileInput.value = '';
+            dropZone.classList.remove('hidden'); fileInfo.classList.add('hidden');
+            actionArea.classList.add('hidden'); progressArea.classList.add('hidden');
+            resultArea.classList.add('hidden'); progressBar.style.width = '0%';
             progressText.textContent = '';
         }
 
-        // Core Compression Logic
         compressBtn.addEventListener('click', async () => {
             if (!currentFile) return;
-
-            // Get selected quality
             const selectedQuality = document.querySelector('input[name="quality"]:checked').value;
             const settings = QUALITY_SETTINGS[selectedQuality];
 
-            // UI Changes
-            actionArea.classList.add('hidden');
-            fileInfo.classList.add('hidden');
+            actionArea.classList.add('hidden'); fileInfo.classList.add('hidden');
             progressArea.classList.remove('hidden');
 
             try {
-                // 1. อ่านไฟล์ PDF
                 const arrayBuffer = await currentFile.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                 const numPages = pdf.numPages;
-
-                // 2. สร้าง jsPDF instance
                 const { jsPDF } = window.jspdf;
                 let newPdf = null;
 
                 for (let i = 1; i <= numPages; i++) {
-                    // Update Progress UI
                     const percent = Math.round((i / numPages) * 100);
                     progressBar.style.width = `${percent}%`;
                     progressText.textContent = `กำลังประมวลผลหน้า ${i} จาก ${numPages}...`;
 
-                    // ดึงข้อมูลหน้า PDF
                     const page = await pdf.getPage(i);
-                    
                     const unscaledViewport = page.getViewport({ scale: 1.0 });
                     const renderViewport = page.getViewport({ scale: settings.scale });
 
-                    // 3. เรนเดอร์ลง Canvas
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    canvas.width = renderViewport.width;
-                    canvas.height = renderViewport.height;
+                    canvas.width = renderViewport.width; canvas.height = renderViewport.height;
 
-                    await page.render({
-                        canvasContext: ctx,
-                        viewport: renderViewport
-                    }).promise;
-
-                    // 4. แปลงภาพเป็น JPEG เพื่อลดขนาด
+                    await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
                     const imgData = canvas.toDataURL('image/jpeg', settings.jpegQuality);
 
-                    // 5. เพิ่มรูปลงใน PDF ใหม่
                     const orientation = unscaledViewport.width > unscaledViewport.height ? 'l' : 'p';
                     const format = [unscaledViewport.width, unscaledViewport.height];
 
                     if (i === 1) {
-                        newPdf = new jsPDF({
-                            orientation: orientation,
-                            unit: 'pt',
-                            format: format
-                        });
+                        newPdf = new jsPDF({ orientation: orientation, unit: 'pt', format: format });
                     } else {
                         newPdf.addPage(format, orientation);
                     }
-
                     newPdf.addImage(imgData, 'JPEG', 0, 0, unscaledViewport.width, unscaledViewport.height);
                 }
 
-                // 6. แปลงกลับเป็น Blob
                 progressText.textContent = "กำลังสร้างไฟล์ใหม่...";
                 compressedBlob = newPdf.output('blob');
-
-                // 7. แสดงผลลัพธ์
                 showResult(currentFile.size, compressedBlob.size);
-
             } catch (error) {
                 console.error("Compression Error:", error);
-                alert("เกิดข้อผิดพลาดในการประมวลผลไฟล์ กรุณาลองใหม่อีกครั้งครับ");
+                alert("เกิดข้อผิดพลาดในการประมวลผลไฟล์ กรุณาลองใหม่อีกครั้ง");
                 resetUI();
             }
         });
 
         function showResult(originalSize, newSize) {
-            progressArea.classList.add('hidden');
-            resultArea.classList.remove('hidden');
-
-            oldSizeTxt.textContent = formatBytes(originalSize);
-            newSizeTxt.textContent = formatBytes(newSize);
+            progressArea.classList.add('hidden'); resultArea.classList.remove('hidden');
+            oldSizeTxt.textContent = formatBytes(originalSize); newSizeTxt.textContent = formatBytes(newSize);
 
             if (newSize >= originalSize) {
-                newSizeTxt.classList.remove('text-green-700');
-                newSizeTxt.classList.add('text-amber-600');
+                newSizeTxt.classList.remove('text-green-700'); newSizeTxt.classList.add('text-amber-600');
                 newSizeTxt.parentElement.classList.remove('bg-green-50', 'border-green-200');
                 newSizeTxt.parentElement.classList.add('bg-amber-50', 'border-amber-200');
                 
                 const infoMsg = document.createElement('p');
                 infoMsg.className = "text-xs text-amber-600 mt-2";
-                infoMsg.textContent = "หมายเหตุ: ไฟล์ต้นฉบับอาจถูกบีบอัดมาอย่างดีแล้ว หรือมีเนื้อหาแบบข้อความล้วน การแปลงเป็นภาพอาจทำให้ขนาดไม่ลดลง ลองเลือกระดับ 'ย่อให้เล็กที่สุด' แทนครับ";
+                infoMsg.textContent = "หมายเหตุ: ไฟล์ต้นฉบับอาจถูกบีบอัดมาดีแล้ว การแปลงเป็นภาพอาจทำให้ขนาดไม่ลดลง ลองเลือกระดับ 'ย่อให้เล็กที่สุด' แทนครับ";
                 if(!document.getElementById('infoMsgWarn')) {
-                    infoMsg.id = 'infoMsgWarn';
-                    resultArea.insertBefore(infoMsg, resultArea.children[3]);
+                    infoMsg.id = 'infoMsgWarn'; resultArea.insertBefore(infoMsg, resultArea.children[3]);
                 }
             } else {
-                const warnMsg = document.getElementById('infoMsgWarn');
-                if(warnMsg) warnMsg.remove();
-                
-                newSizeTxt.classList.add('text-green-700');
-                newSizeTxt.classList.remove('text-amber-600');
+                const warnMsg = document.getElementById('infoMsgWarn'); if(warnMsg) warnMsg.remove();
+                newSizeTxt.classList.add('text-green-700'); newSizeTxt.classList.remove('text-amber-600');
                 newSizeTxt.parentElement.classList.add('bg-green-50', 'border-green-200');
                 newSizeTxt.parentElement.classList.remove('bg-amber-50', 'border-amber-200');
             }
         }
 
-        // จัดการปุ่มดาวน์โหลด
         downloadBtn.addEventListener('click', () => {
             if (!compressedBlob) return;
-            
             const url = URL.createObjectURL(compressedBlob);
             const a = document.createElement('a');
-            
             const originalName = currentFile.name;
             const newName = originalName.replace(/\.[^/.]+$/, "") + "_compressed.pdf";
             
-            a.href = url;
-            a.download = newName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            a.href = url; a.download = newName;
+            document.body.appendChild(a); a.click();
+            document.body.removeChild(a); URL.revokeObjectURL(url);
         });
 
     </script>
