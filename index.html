@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE STANDARD - PDF Compressor</title>
+    <title>PDF Compressor & Sign - THE STANDARD</title>
     
     <!-- Google Fonts: Prompt -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,19 +20,11 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#fdf2f2',
-                            100: '#fbe5e6',
-                            200: '#f5c2c4',
-                            300: '#ef9fa2',
-                            400: '#e2595d',
-                            500: '#e62227', // CI Color
-                            600: '#cf1e23',
-                            700: '#ad191d',
+                            50: '#fdf2f2', 100: '#fbe5e6', 200: '#f5c2c4', 300: '#ef9fa2',
+                            400: '#e2595d', 500: '#e62227', 600: '#cf1e23', 700: '#ad191d',
                         }
                     },
-                    fontFamily: {
-                        sans: ['Prompt', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Prompt', 'sans-serif'], }
                 }
             }
         }
@@ -42,16 +34,11 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- PDF.js สำหรับอ่านไฟล์ PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        // ตั้งค่า Worker สำหรับ PDF.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    </script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <!-- jsPDF สำหรับสร้างไฟล์ PDF ใหม่ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
     <!-- JSZip สำหรับรวมไฟล์รูปภาพเป็น ZIP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
     <!-- Google Identity Services (Google API) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -60,21 +47,21 @@
         .drop-zone { transition: all 0.2s ease-in-out; }
         .drop-zone.active { border-color: #e62227; background-color: #fdf2f2; }
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px; height: 36px; border-radius: 50%;
-            border-left-color: #e62227;
-            animation: spin 1s linear infinite;
+            border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%;
+            border-left-color: #e62227; animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Custom scrollbar for modal */
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px;}
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Signature Area */
+        #sigPadCanvas { touch-action: none; /* Prevent scrolling while signing */ }
+        .draggable-sig { cursor: move; touch-action: none; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col">
+<body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col overflow-x-hidden">
 
     <!-- ================= LOGIN PAGE ================= -->
     <div id="loginPage" class="flex-1 flex items-center justify-center p-4">
@@ -84,14 +71,10 @@
             </div>
             <h1 class="text-2xl font-bold text-gray-900 mb-2">เข้าสู่ระบบ</h1>
             <p class="text-gray-500 mb-8 text-sm">ระบบจำกัดสิทธิ์เฉพาะผู้ใช้อีเมลองค์กร<br/><span class="font-medium text-gray-800">@thestandard.co</span> เท่านั้น</p>
-            
-            <!-- จุดที่จะให้ Google Render ปุ่ม Login อัตโนมัติ -->
             <div id="googleBtnDiv" class="flex justify-center w-full min-h-[40px]"></div>
-
-            <!-- Error Message Box -->
             <div id="loginError" class="hidden mt-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm flex items-start text-left">
                 <i data-lucide="alert-circle" class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5"></i>
-                <span id="loginErrorText">ขออภัย คุณไม่ได้รับสิทธิ์เข้าใช้งาน กรุณาใช้อีเมล @thestandard.co</span>
+                <span id="loginErrorText">ขออภัย คุณไม่ได้รับสิทธิ์เข้าใช้งาน</span>
             </div>
         </div>
     </div>
@@ -103,22 +86,23 @@
             <div class="max-w-5xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-2">
                     <i data-lucide="file-down" class="w-6 h-6 text-brand-500"></i>
-                    <span class="font-bold text-gray-900 text-lg">PDF Compressor</span>
+                    <span class="font-bold text-gray-900 text-lg hidden sm:block">PDF Compressor & Sign</span>
+                    <span class="font-bold text-gray-900 text-lg sm:hidden">PDF Tools</span>
                 </div>
                 <div class="flex items-center gap-4 bg-gray-50 px-4 py-1.5 rounded-full border border-gray-100">
                     <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span id="userEmailDisplay" class="text-sm font-medium text-gray-700"></span>
+                    <span id="userEmailDisplay" class="text-sm font-medium text-gray-700 hidden sm:block"></span>
                     <div class="h-4 w-px bg-gray-300 mx-1"></div>
                     <button id="logoutBtn" class="text-sm text-brand-600 hover:text-brand-800 font-medium transition-colors">ออกจากระบบ</button>
                 </div>
             </div>
         </nav>
 
-        <div class="max-w-3xl mx-auto pt-10 px-4 sm:px-6 lg:px-8 w-full pb-12">
+        <div class="max-w-4xl mx-auto pt-10 px-4 sm:px-6 lg:px-8 w-full pb-12">
             <!-- Header -->
             <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">ระบบย่อขนาดไฟล์ PDF</h2>
-                <p class="text-gray-600">ลดขนาดไฟล์เอกสารของคุณง่ายๆ (ทำงานบนเครื่องของคุณ ไม่มีการอัปโหลดออกสู่ภายนอก)</p>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">ระบบย่อขนาด & เซ็นไฟล์ PDF</h2>
+                <p class="text-gray-600">จัดการไฟล์เอกสารของคุณง่ายๆ ปลอดภัย (ทำงานบนเครื่องของคุณ ไม่ส่งข้อมูลออกภายนอก)</p>
             </div>
 
             <!-- Main Card -->
@@ -132,7 +116,7 @@
                         </div>
                         <div>
                             <p class="text-lg font-medium text-gray-700">คลิกที่นี่เพื่อเลือกไฟล์ PDF</p>
-                            <p class="text-sm text-gray-500 mt-1">หรือลากไฟล์ PDF มาวางตรงนี้</p>
+                            <p class="text-sm text-gray-500 mt-1">หรือลากไฟล์มาวางตรงนี้</p>
                         </div>
                     </div>
                 </div>
@@ -160,7 +144,7 @@
                                 <input type="radio" name="quality" value="low" class="peer sr-only">
                                 <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
                                     <p class="font-medium text-gray-800">ย่อให้เล็กที่สุด</p>
-                                    <p class="text-xs text-gray-500 mt-1">ไฟล์เล็กมาก แต่อาจเบลอเล็กน้อย</p>
+                                    <p class="text-xs text-gray-500 mt-1">ไฟล์เล็ก แต่อาจเบลอเล็กน้อย</p>
                                 </div>
                             </label>
                             <label class="cursor-pointer">
@@ -174,7 +158,7 @@
                                 <input type="radio" name="quality" value="high" class="peer sr-only">
                                 <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
                                     <p class="font-medium text-gray-800">เน้นความคมชัด</p>
-                                    <p class="text-xs text-gray-500 mt-1">ชัดเจนสุด แต่ไฟล์อาจลดไม่มาก</p>
+                                    <p class="text-xs text-gray-500 mt-1">ชัดเจนสุด แต่ไฟล์ลดไม่มาก</p>
                                 </div>
                             </label>
                         </div>
@@ -182,21 +166,18 @@
 
                     <button id="compressBtn" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
                         <i data-lucide="zap" class="w-5 h-5"></i>
-                        <span>เริ่มย่อขนาดไฟล์</span>
+                        <span>เริ่มประมวลผลไฟล์</span>
                     </button>
                 </div>
 
                 <!-- Processing / Progress Area -->
                 <div id="progressArea" class="hidden py-8 text-center">
                     <div class="flex justify-center mb-4"><div class="spinner"></div></div>
-                    <h3 class="text-lg font-medium text-gray-800 mb-2">กำลังประมวลผล...</h3>
+                    <h3 class="text-lg font-medium text-gray-800 mb-2">กำลังเตรียมเอกสาร...</h3>
                     <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2 max-w-md mx-auto overflow-hidden">
                         <div id="progressBar" class="bg-brand-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
-                    <p id="progressText" class="text-sm text-gray-500">กำลังเตรียมไฟล์...</p>
-                    <p class="text-xs text-amber-600 mt-4 bg-amber-50 inline-block px-3 py-1 rounded-full border border-amber-100">
-                        <i data-lucide="alert-circle" class="w-3 h-3 inline mr-1"></i> กรุณาอย่าปิดแท็บนี้จนกว่าจะเสร็จสิ้น
-                    </p>
+                    <p id="progressText" class="text-sm text-gray-500">กำลังประมวลผล...</p>
                 </div>
 
                 <!-- Result Area -->
@@ -204,7 +185,7 @@
                     <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i data-lucide="check-circle" class="w-8 h-8"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">ย่อไฟล์สำเร็จ!</h3>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">ประมวลผลไฟล์สำเร็จ!</h3>
                     
                     <div class="flex justify-center items-center space-x-4 text-sm mb-6">
                         <div class="bg-gray-100 px-4 py-2 rounded-lg">
@@ -213,22 +194,27 @@
                         </div>
                         <i data-lucide="arrow-right" class="w-5 h-5 text-gray-400"></i>
                         <div class="bg-green-50 px-4 py-2 rounded-lg border border-green-200">
-                            <p class="text-green-600 text-xs font-medium">ขนาดใหม่</p>
+                            <p class="text-green-600 text-xs font-medium">ขนาดใหม่ล่าสุด</p>
                             <p id="newSizeTxt" class="font-bold text-green-700"></p>
                         </div>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                        <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <button id="openSignBtn" class="bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                            <i data-lucide="pen-tool" class="w-5 h-5"></i>
+                            <span>เซ็นเอกสาร</span>
+                        </button>
+                        <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
                             <i data-lucide="download" class="w-5 h-5"></i>
-                            <span>ดาวน์โหลด PDF</span>
+                            <span>โหลด PDF</span>
                         </button>
-                        <button id="downloadImgBtn" class="bg-brand-500 hover:bg-brand-600 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed">
+                        <button id="downloadImgBtn" class="bg-brand-500 hover:bg-brand-600 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
                             <i data-lucide="image" class="w-5 h-5"></i>
-                            <span>ดาวน์โหลดรูป (ZIP)</span>
+                            <span>โหลดรูป (ZIP)</span>
                         </button>
-                        <button id="resetBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition-colors">
-                            ย่อไฟล์อื่นต่อ
+                        <button id="resetBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors">
+                            ทำไฟล์อื่น
                         </button>
                     </div>
                 </div>
@@ -236,64 +222,136 @@
         </div>
     </div>
 
-    <!-- ================= PAGE SELECTION MODAL ================= -->
-    <div id="pageSelectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
-            <!-- Modal Header -->
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+    <!-- ================= SIGNATURE MODAL ================= -->
+    <div id="signModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm p-2 sm:p-4">
+        <div class="bg-white rounded-2xl w-full max-w-6xl flex flex-col h-[95vh] shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="bg-brand-100 p-2 rounded-lg text-brand-500">
-                        <i data-lucide="images" class="w-6 h-6"></i>
+                    <div class="bg-amber-100 p-2 rounded-lg text-amber-600">
+                        <i data-lucide="pen-tool" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900">เลือกหน้าที่ต้องการดาวน์โหลด</h3>
-                        <p class="text-sm text-gray-500 mt-1">คลิกที่รูปเพื่อเลือกหน้าที่จะบันทึกเป็นรูปภาพ (JPEG)</p>
+                        <h3 class="text-xl font-bold text-gray-900">ระบบเซ็นเอกสาร</h3>
+                        <p class="text-sm text-gray-500 hidden sm:block">วาดลายเซ็นและลากวางในตำแหน่งที่ต้องการ</p>
                     </div>
                 </div>
-                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors">
+                <button id="closeSignModalBtn" class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
-            
-            <!-- Modal Body -->
+
+            <!-- Body: 2 Columns -->
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden bg-gray-100">
+                
+                <!-- Left: Document Preview -->
+                <div class="flex-1 overflow-auto custom-scrollbar relative p-4 flex flex-col items-center border-r border-gray-200">
+                    <!-- Page Navigation -->
+                    <div class="flex items-center gap-4 bg-white px-4 py-2 rounded-full shadow-sm mb-4 sticky top-0 z-10">
+                        <button id="sigPrevPageBtn" class="p-1 rounded hover:bg-gray-100 text-gray-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                        <span id="sigPageIndicator" class="text-sm font-medium">หน้า 1 / 1</span>
+                        <button id="sigNextPageBtn" class="p-1 rounded hover:bg-gray-100 text-gray-600"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                    </div>
+
+                    <!-- PDF Page Container -->
+                    <div id="pdfPreviewContainer" class="relative bg-white shadow-md select-none overflow-hidden" style="width: 100%; max-width: 800px;">
+                        <img id="pdfPageImage" src="" alt="Document Preview" class="w-full h-auto block pointer-events-none">
+                        
+                        <!-- Draggable Signature Overlay (Hidden initially) -->
+                        <div id="sigOverlay" class="draggable-sig hidden absolute border-2 border-dashed border-blue-500 p-1 bg-blue-500 bg-opacity-10" style="left: 50%; top: 50%; transform: translate(-50%, -50%);">
+                            <img id="sigOverlayImg" src="" class="pointer-events-none block" style="width: 150px; height: auto;">
+                            <!-- Close sig button -->
+                            <button id="removeSigBtn" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
+                                <i data-lucide="x" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Tools -->
+                <div class="w-full md:w-80 bg-white p-6 shrink-0 overflow-y-auto flex flex-col shadow-[-4px_0_15px_rgba(0,0,0,0.05)] z-20">
+                    <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i data-lucide="edit-3" class="w-5 h-5 text-amber-500"></i> กระดานเซ็นชื่อ
+                    </h4>
+                    
+                    <div class="border border-gray-200 rounded-xl bg-gray-50 mb-3 relative overflow-hidden">
+                        <canvas id="sigPadCanvas" width="300" height="150" class="w-full h-[150px] cursor-crosshair bg-white"></canvas>
+                        <div class="absolute bottom-2 left-0 w-full flex justify-center pointer-events-none">
+                            <div class="w-3/4 border-b border-dashed border-gray-300"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-2 mb-6">
+                        <button id="clearSigBtn" class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+                            ล้างกระดาน
+                        </button>
+                        <button id="placeSigBtn" class="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                            วางบนเอกสาร
+                        </button>
+                    </div>
+
+                    <!-- Overlay Controls (Visible only when signature is placed) -->
+                    <div id="sigControls" class="hidden p-4 bg-blue-50 border border-blue-100 rounded-xl mb-6 space-y-4 animate-fade-in">
+                        <p class="text-xs font-medium text-blue-800"><i data-lucide="info" class="w-3 h-3 inline"></i> ลากที่กรอบเพื่อเลื่อนตำแหน่ง</p>
+                        
+                        <div>
+                            <label class="text-xs font-medium text-gray-700 mb-1 block">ปรับขนาดลายเซ็น:</label>
+                            <input type="range" id="sigSizeSlider" min="50" max="400" value="150" class="w-full h-1.5 bg-blue-200 rounded-lg appearance-none cursor-pointer">
+                        </div>
+
+                        <button id="applySigBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
+                            <i data-lucide="stamp" class="w-4 h-4"></i> ประทับลายเซ็นลงกระดาษ
+                        </button>
+                    </div>
+
+                    <div class="mt-auto pt-6 border-t border-gray-100">
+                        <button id="finishSignBtn" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors shadow-md">
+                            เสร็จสิ้น / ยืนยันการแก้ไข
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= PAGE SELECTION MODAL (ZIP) ================= -->
+    <div id="pageSelectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="bg-brand-100 p-2 rounded-lg text-brand-500"><i data-lucide="images" class="w-6 h-6"></i></div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">เลือกหน้าเพื่อดาวน์โหลดรูป</h3>
+                    </div>
+                </div>
+                <button id="closeModalBtn" class="text-gray-400 hover:bg-gray-200 p-2 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
             <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
                 <div class="flex justify-between items-center mb-4">
                     <span class="text-sm font-medium text-gray-700">รายการหน้าทั้งหมด:</span>
                     <div class="space-x-2 flex items-center">
-                        <button id="selectAllBtn" class="text-sm text-brand-600 hover:text-brand-800 font-medium px-3 py-1 rounded hover:bg-brand-50 transition-colors">เลือกทั้งหมด</button>
+                        <button id="selectAllBtn" class="text-sm text-brand-600 hover:text-brand-800 font-medium px-3 py-1 rounded hover:bg-brand-50">เลือกทั้งหมด</button>
                         <span class="text-gray-300">|</span>
-                        <button id="deselectAllBtn" class="text-sm text-gray-500 hover:text-gray-700 font-medium px-3 py-1 rounded hover:bg-gray-100 transition-colors">เอาออกทั้งหมด</button>
+                        <button id="deselectAllBtn" class="text-sm text-gray-500 hover:text-gray-700 font-medium px-3 py-1 rounded hover:bg-gray-100">เอาออกทั้งหมด</button>
                     </div>
                 </div>
-                
-                <!-- Grid for Image Previews -->
-                <div id="pageGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    <!-- Checkboxes with Images จะถูกสร้างด้วย JavaScript -->
-                </div>
+                <div id="pageGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
             </div>
-            
-            <!-- Modal Footer -->
-            <div class="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-                <button id="cancelModalBtn" class="px-5 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-gray-200 transition-colors">
-                    ยกเลิก
-                </button>
-                <button id="confirmZipBtn" class="px-5 py-2.5 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 flex items-center gap-2 transition-colors">
-                    <i data-lucide="download" class="w-5 h-5"></i> 
-                    <span>บันทึก ZIP</span>
+            <div class="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 shrink-0">
+                <button id="cancelModalBtn" class="px-5 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-gray-200">ยกเลิก</button>
+                <button id="confirmZipBtn" class="px-5 py-2.5 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 flex items-center gap-2">
+                    <i data-lucide="download" class="w-5 h-5"></i> <span>บันทึก ZIP</span>
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        // เริ่มต้นไอคอน
         lucide.createIcons();
 
         // ---------------------------------------------------------
-        // 1. ระบบ Google Identity Services (Google API)
+        // 1. Google Authentication
         // ---------------------------------------------------------
-        
-        // 🔴🔴🔴 นำ Google Client ID จาก Google Cloud Console มาใส่ที่นี่ 🔴🔴🔴
         const GOOGLE_CLIENT_ID = "854069548103-cahuv3en92roor6lq7mbcjr9v8v7q50u.apps.googleusercontent.com";
         const ALLOWED_DOMAIN = "@thestandard.co";
 
@@ -304,364 +362,434 @@
         const userEmailDisplay = document.getElementById('userEmailDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // ฟังก์ชันถอดรหัส JWT Token ที่ได้จาก Google
         function parseJwt(token) {
-            try {
-                var base64Url = token.split('.')[1];
-                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload);
-            } catch (e) {
-                return null;
-            }
+            try { return JSON.parse(decodeURIComponent(window.atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); } catch (e) { return null; }
         }
 
-        // เมื่อโหลดหน้าเว็บเสร็จ ให้สร้างปุ่ม Google Login
         window.onload = function () {
-            if (GOOGLE_CLIENT_ID === "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com") {
-                console.warn("กรุณาใส่ Google Client ID เพื่อใช้งานระบบ Login");
-            }
-
-            google.accounts.id.initialize({
-                client_id: GOOGLE_CLIENT_ID,
-                callback: handleCredentialResponse,
-                auto_select: false // ไม่ให้ล็อกอินออโต้ เพื่อให้ผู้ใช้เลือก Account ได้
-            });
-
-            // สร้างปุ่ม Login ใน Div ที่เตรียมไว้
-            google.accounts.id.renderButton(
-                document.getElementById("googleBtnDiv"),
-                { theme: "outline", size: "large", width: 280, text: "signin_with" }
-            );
+            google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleCredentialResponse, auto_select: false });
+            google.accounts.id.renderButton(document.getElementById("googleBtnDiv"), { theme: "outline", size: "large", width: 280, text: "signin_with" });
         };
 
-        // เมื่อผู้ใช้กดล็อกอินและ Google ส่งข้อมูลกลับมา
         function handleCredentialResponse(response) {
             loginError.classList.add('hidden');
-            
-            // ถอดรหัส JWT เพื่อเอาข้อมูลผู้ใช้
             const responsePayload = parseJwt(response.credential);
-
             if (responsePayload && responsePayload.email) {
-                const userEmail = responsePayload.email;
-                
-                // ตรวจสอบโดเมนอีเมล
-                if (userEmail.endsWith(ALLOWED_DOMAIN)) {
-                    // ล็อกอินสำเร็จ เข้าสู่หน้าแอป
-                    loginPage.classList.add('hidden');
-                    appPage.classList.remove('hidden');
-                    userEmailDisplay.textContent = userEmail;
+                if (responsePayload.email.endsWith(ALLOWED_DOMAIN)) {
+                    loginPage.classList.add('hidden'); appPage.classList.remove('hidden'); userEmailDisplay.textContent = responsePayload.email;
                 } else {
-                    // โดเมนไม่ถูกต้อง แจ้งเตือน
-                    loginError.classList.remove('hidden');
-                    loginErrorText.textContent = `ระบบปฏิเสธการเข้าถึง: อีเมล ${userEmail} ไม่ได้รับสิทธิ์ (ต้องเป็น ${ALLOWED_DOMAIN})`;
-                    // สั่งยกเลิกการล็อกอิน
+                    loginError.classList.remove('hidden'); loginErrorText.textContent = `สงวนสิทธิ์เฉพาะอีเมล ${ALLOWED_DOMAIN} เท่านั้น`;
                     google.accounts.id.disableAutoSelect();
                 }
-            } else {
-                loginError.classList.remove('hidden');
-                loginErrorText.textContent = "เกิดข้อผิดพลาดในการดึงข้อมูลจาก Google";
             }
         }
-
-        // ปุ่มออกจากระบบ
         logoutBtn.addEventListener('click', () => {
-            google.accounts.id.disableAutoSelect(); // ปิดการเชื่อมต่อ
-            loginPage.classList.remove('hidden');
-            appPage.classList.add('hidden');
-            userEmailDisplay.textContent = "";
-            resetUI(); // เคลียร์ไฟล์ที่ย่อค้างไว้
+            google.accounts.id.disableAutoSelect(); loginPage.classList.remove('hidden'); appPage.classList.add('hidden'); resetUI();
         });
 
         // ---------------------------------------------------------
-        // 2. ระบบบีบอัด PDF
+        // 2. Core App State & File Logic
         // ---------------------------------------------------------
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const removeFileBtn = document.getElementById('removeFileBtn');
-        const actionArea = document.getElementById('actionArea');
-        const compressBtn = document.getElementById('compressBtn');
-        const progressArea = document.getElementById('progressArea');
-        const progressBar = document.getElementById('progressBar');
-        const progressText = document.getElementById('progressText');
-        const resultArea = document.getElementById('resultArea');
-        const oldSizeTxt = document.getElementById('oldSizeTxt');
-        const newSizeTxt = document.getElementById('newSizeTxt');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const downloadImgBtn = document.getElementById('downloadImgBtn');
-        const resetBtn = document.getElementById('resetBtn');
-
-        // Modal Elements
-        const pageSelectModal = document.getElementById('pageSelectModal');
-        const pageGrid = document.getElementById('pageGrid');
-        const selectAllBtn = document.getElementById('selectAllBtn');
-        const deselectAllBtn = document.getElementById('deselectAllBtn');
-        const confirmZipBtn = document.getElementById('confirmZipBtn');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const cancelModalBtn = document.getElementById('cancelModalBtn');
-
         let currentFile = null;
         let compressedBlob = null;
-        let compressedImages = [];
+        let compressedImages = []; // Stores Base64 of each page (Main Source of Truth)
+        let unscaledFormats = [];  // To remember original dimensions for rebuilding PDF
+        let hasUnsavedSignatures = false; // Flag to rebuild PDF
 
-        const QUALITY_SETTINGS = {
-            'low': { scale: 1.5, jpegQuality: 0.5 },
-            'medium': { scale: 2.0, jpegQuality: 0.7 },
-            'high': { scale: 3.0, jpegQuality: 0.85 }
-        };
+        const QUALITY_SETTINGS = { 'low': { scale: 1.5, jpegQuality: 0.5 }, 'medium': { scale: 2.0, jpegQuality: 0.7 }, 'high': { scale: 3.0, jpegQuality: 0.85 } };
 
-        function formatBytes(bytes, decimals = 2) {
+        function formatBytes(bytes) {
             if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const dm = decimals < 0 ? 0 : decimals;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            const k = 1024, sizes = ['Bytes', 'KB', 'MB', 'GB'], i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
+
+        // DOM Setup for File Upload
+        const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('fileInput'), fileInfo = document.getElementById('fileInfo'), fileName = document.getElementById('fileName'), fileSize = document.getElementById('fileSize'), removeFileBtn = document.getElementById('removeFileBtn'), actionArea = document.getElementById('actionArea'), compressBtn = document.getElementById('compressBtn'), progressArea = document.getElementById('progressArea'), progressBar = document.getElementById('progressBar'), progressText = document.getElementById('progressText'), resultArea = document.getElementById('resultArea'), oldSizeTxt = document.getElementById('oldSizeTxt'), newSizeTxt = document.getElementById('newSizeTxt'), resetBtn = document.getElementById('resetBtn');
 
         dropZone.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('active'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('active'));
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault(); dropZone.classList.remove('active');
-            if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]);
-        });
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
-        });
-        removeFileBtn.addEventListener('click', resetUI);
-        resetBtn.addEventListener('click', resetUI);
+        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('active'); if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]); });
+        fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
+        removeFileBtn.addEventListener('click', resetUI); resetBtn.addEventListener('click', resetUI);
 
         function handleFileSelect(file) {
-            if (file.type !== 'application/pdf') {
-                alert('กรุณาเลือกไฟล์ PDF เท่านั้นครับ');
-                return;
-            }
-            currentFile = file;
-            fileName.textContent = file.name;
-            fileSize.textContent = formatBytes(file.size);
-            
-            dropZone.classList.add('hidden');
-            fileInfo.classList.remove('hidden');
-            actionArea.classList.remove('hidden');
-            resultArea.classList.add('hidden');
+            if (file.type !== 'application/pdf') { alert('กรุณาเลือกไฟล์ PDF เท่านั้นครับ'); return; }
+            currentFile = file; fileName.textContent = file.name; fileSize.textContent = formatBytes(file.size);
+            dropZone.classList.add('hidden'); fileInfo.classList.remove('hidden'); actionArea.classList.remove('hidden'); resultArea.classList.add('hidden');
         }
 
         function resetUI() {
-            currentFile = null; compressedBlob = null; compressedImages = []; fileInput.value = '';
-            dropZone.classList.remove('hidden'); fileInfo.classList.add('hidden');
-            actionArea.classList.add('hidden'); progressArea.classList.add('hidden');
-            resultArea.classList.add('hidden'); progressBar.style.width = '0%';
-            progressText.textContent = '';
+            currentFile = null; compressedBlob = null; compressedImages = []; unscaledFormats = []; hasUnsavedSignatures = false; fileInput.value = '';
+            dropZone.classList.remove('hidden'); fileInfo.classList.add('hidden'); actionArea.classList.add('hidden'); progressArea.classList.add('hidden'); resultArea.classList.add('hidden'); progressBar.style.width = '0%'; progressText.textContent = '';
         }
 
+        // ---------------------------------------------------------
+        // 3. Compress / Read PDF
+        // ---------------------------------------------------------
         compressBtn.addEventListener('click', async () => {
             if (!currentFile) return;
-            const selectedQuality = document.querySelector('input[name="quality"]:checked').value;
-            const settings = QUALITY_SETTINGS[selectedQuality];
-
-            actionArea.classList.add('hidden'); fileInfo.classList.add('hidden');
-            progressArea.classList.remove('hidden');
+            const settings = QUALITY_SETTINGS[document.querySelector('input[name="quality"]:checked').value];
+            actionArea.classList.add('hidden'); fileInfo.classList.add('hidden'); progressArea.classList.remove('hidden');
 
             try {
                 const arrayBuffer = await currentFile.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                 const numPages = pdf.numPages;
-                const { jsPDF } = window.jspdf;
-                let newPdf = null;
+                
+                compressedImages = [];
+                unscaledFormats = [];
 
                 for (let i = 1; i <= numPages; i++) {
-                    const percent = Math.round((i / numPages) * 100);
-                    progressBar.style.width = `${percent}%`;
+                    progressBar.style.width = `${Math.round((i / numPages) * 100)}%`;
                     progressText.textContent = `กำลังประมวลผลหน้า ${i} จาก ${numPages}...`;
 
                     const page = await pdf.getPage(i);
                     const unscaledViewport = page.getViewport({ scale: 1.0 });
                     const renderViewport = page.getViewport({ scale: settings.scale });
 
+                    // Save original format for rebuilding PDF later
+                    unscaledFormats.push({
+                        w: unscaledViewport.width, h: unscaledViewport.height, 
+                        orientation: unscaledViewport.width > unscaledViewport.height ? 'l' : 'p'
+                    });
+
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     canvas.width = renderViewport.width; canvas.height = renderViewport.height;
 
                     await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
-                    const imgData = canvas.toDataURL('image/jpeg', settings.jpegQuality);
-
-                    // เก็บรูปภาพแต่ละหน้าไว้สำหรับ Export เป็น ZIP
-                    compressedImages.push(imgData);
-
-                    const orientation = unscaledViewport.width > unscaledViewport.height ? 'l' : 'p';
-                    const format = [unscaledViewport.width, unscaledViewport.height];
-
-                    if (i === 1) {
-                        newPdf = new jsPDF({ orientation: orientation, unit: 'pt', format: format });
-                    } else {
-                        newPdf.addPage(format, orientation);
-                    }
-                    newPdf.addImage(imgData, 'JPEG', 0, 0, unscaledViewport.width, unscaledViewport.height);
+                    compressedImages.push(canvas.toDataURL('image/jpeg', settings.jpegQuality));
                 }
 
-                progressText.textContent = "กำลังสร้างไฟล์ใหม่...";
-                compressedBlob = newPdf.output('blob');
+                await rebuildPdfBlob(); // Build initial PDF
                 showResult(currentFile.size, compressedBlob.size);
             } catch (error) {
-                console.error("Compression Error:", error);
-                alert("เกิดข้อผิดพลาดในการประมวลผลไฟล์ กรุณาลองใหม่อีกครั้ง");
-                resetUI();
+                console.error(error); alert("เกิดข้อผิดพลาดในการประมวลผลไฟล์"); resetUI();
             }
         });
+
+        // Helper: Create PDF from images array
+        async function rebuildPdfBlob() {
+            progressText.textContent = "กำลังสร้างไฟล์ PDF...";
+            const { jsPDF } = window.jspdf;
+            let newPdf = null;
+            
+            for (let i = 0; i < compressedImages.length; i++) {
+                const fmt = unscaledFormats[i];
+                if (i === 0) {
+                    newPdf = new jsPDF({ orientation: fmt.orientation, unit: 'pt', format: [fmt.w, fmt.h] });
+                } else {
+                    newPdf.addPage([fmt.w, fmt.h], fmt.orientation);
+                }
+                newPdf.addImage(compressedImages[i], 'JPEG', 0, 0, fmt.w, fmt.h);
+            }
+            compressedBlob = newPdf.output('blob');
+            
+            // Update UI size if result area is visible
+            if(!progressArea.classList.contains('hidden') || hasUnsavedSignatures) {
+                document.getElementById('newSizeTxt').textContent = formatBytes(compressedBlob.size);
+            }
+            hasUnsavedSignatures = false;
+        }
 
         function showResult(originalSize, newSize) {
             progressArea.classList.add('hidden'); resultArea.classList.remove('hidden');
             oldSizeTxt.textContent = formatBytes(originalSize); newSizeTxt.textContent = formatBytes(newSize);
+        }
 
-            if (newSize >= originalSize) {
-                newSizeTxt.classList.remove('text-green-700'); newSizeTxt.classList.add('text-amber-600');
-                newSizeTxt.parentElement.classList.remove('bg-green-50', 'border-green-200');
-                newSizeTxt.parentElement.classList.add('bg-amber-50', 'border-amber-200');
-                
-                const infoMsg = document.createElement('p');
-                infoMsg.className = "text-xs text-amber-600 mt-2";
-                infoMsg.textContent = "หมายเหตุ: ไฟล์ต้นฉบับอาจถูกบีบอัดมาดีแล้ว การแปลงเป็นภาพอาจทำให้ขนาดไม่ลดลง ลองเลือกระดับ 'ย่อให้เล็กที่สุด' แทนครับ";
-                if(!document.getElementById('infoMsgWarn')) {
-                    infoMsg.id = 'infoMsgWarn'; resultArea.insertBefore(infoMsg, resultArea.children[3]);
-                }
-            } else {
-                const warnMsg = document.getElementById('infoMsgWarn'); if(warnMsg) warnMsg.remove();
-                newSizeTxt.classList.add('text-green-700'); newSizeTxt.classList.remove('text-amber-600');
-                newSizeTxt.parentElement.classList.add('bg-green-50', 'border-green-200');
-                newSizeTxt.parentElement.classList.remove('bg-amber-50', 'border-amber-200');
+        // Buttons
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (!compressedBlob) return;
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(compressedBlob); a.download = currentFile.name.replace(/\.[^/.]+$/, "") + "_compressed.pdf";
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+        });
+
+        // ---------------------------------------------------------
+        // 4. SIGNATURE SYSTEM (New)
+        // ---------------------------------------------------------
+        const signModal = document.getElementById('signModal');
+        const openSignBtn = document.getElementById('openSignBtn');
+        const closeSignModalBtn = document.getElementById('closeSignModalBtn');
+        const finishSignBtn = document.getElementById('finishSignBtn');
+        
+        // Prev/Next Nav
+        let sigPageIdx = 0;
+        const sigPrevPageBtn = document.getElementById('sigPrevPageBtn');
+        const sigNextPageBtn = document.getElementById('sigNextPageBtn');
+        const sigPageIndicator = document.getElementById('sigPageIndicator');
+        const pdfPageImage = document.getElementById('pdfPageImage');
+        const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
+
+        // Signature Pad
+        const sigCanvas = document.getElementById('sigPadCanvas');
+        const sigCtx = sigCanvas.getContext('2d');
+        const clearSigBtn = document.getElementById('clearSigBtn');
+        const placeSigBtn = document.getElementById('placeSigBtn');
+        
+        // Draggable Overlay
+        const sigOverlay = document.getElementById('sigOverlay');
+        const sigOverlayImg = document.getElementById('sigOverlayImg');
+        const removeSigBtn = document.getElementById('removeSigBtn');
+        const sigControls = document.getElementById('sigControls');
+        const sigSizeSlider = document.getElementById('sigSizeSlider');
+        const applySigBtn = document.getElementById('applySigBtn');
+
+        // --- Signature Pad Drawing Logic ---
+        let isDrawing = false;
+        
+        function getPointerPos(e) {
+            const rect = sigCanvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+
+        function startDraw(e) {
+            e.preventDefault(); isDrawing = true; const pos = getPointerPos(e);
+            sigCtx.beginPath(); sigCtx.moveTo(pos.x, pos.y); sigCtx.lineCap = 'round'; sigCtx.lineJoin = 'round';
+            sigCtx.lineWidth = 3; sigCtx.strokeStyle = '#000000';
+        }
+
+        function draw(e) {
+            if (!isDrawing) return; e.preventDefault(); const pos = getPointerPos(e);
+            sigCtx.lineTo(pos.x, pos.y); sigCtx.stroke();
+        }
+
+        function endDraw(e) { e.preventDefault(); isDrawing = false; }
+
+        sigCanvas.addEventListener('mousedown', startDraw); sigCanvas.addEventListener('mousemove', draw); sigCanvas.addEventListener('mouseup', endDraw); sigCanvas.addEventListener('mouseout', endDraw);
+        sigCanvas.addEventListener('touchstart', startDraw, {passive: false}); sigCanvas.addEventListener('touchmove', draw, {passive: false}); sigCanvas.addEventListener('touchend', endDraw);
+
+        clearSigBtn.addEventListener('click', () => { sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); });
+
+        // --- Modal Navigation ---
+        function updateSignPreview() {
+            pdfPageImage.src = compressedImages[sigPageIdx];
+            sigPageIndicator.textContent = `หน้า ${sigPageIdx + 1} / ${compressedImages.length}`;
+            sigPrevPageBtn.disabled = sigPageIdx === 0;
+            sigNextPageBtn.disabled = sigPageIdx === compressedImages.length - 1;
+            sigPrevPageBtn.style.opacity = sigPrevPageBtn.disabled ? '0.3' : '1';
+            sigNextPageBtn.style.opacity = sigNextPageBtn.disabled ? '0.3' : '1';
+            
+            // Hide overlay when changing page
+            hideSignatureOverlay();
+        }
+
+        openSignBtn.addEventListener('click', () => {
+            sigPageIdx = 0; updateSignPreview(); signModal.classList.remove('hidden');
+        });
+
+        closeSignModalBtn.addEventListener('click', closeModalAndCheckRebuild);
+        finishSignBtn.addEventListener('click', closeModalAndCheckRebuild);
+
+        async function closeModalAndCheckRebuild() {
+            signModal.classList.add('hidden');
+            hideSignatureOverlay();
+            if (hasUnsavedSignatures) {
+                // Re-build PDF blob because images array was modified
+                const origHtml = finishSignBtn.innerHTML;
+                progressArea.classList.remove('hidden'); resultArea.classList.add('hidden');
+                await rebuildPdfBlob();
+                progressArea.classList.add('hidden'); resultArea.classList.remove('hidden');
             }
         }
 
-        downloadBtn.addEventListener('click', () => {
-            if (!compressedBlob) return;
-            const url = URL.createObjectURL(compressedBlob);
-            const a = document.createElement('a');
-            const originalName = currentFile.name;
-            const newName = originalName.replace(/\.[^/.]+$/, "") + "_compressed.pdf";
+        sigPrevPageBtn.addEventListener('click', () => { if(sigPageIdx > 0) { sigPageIdx--; updateSignPreview(); } });
+        sigNextPageBtn.addEventListener('click', () => { if(sigPageIdx < compressedImages.length - 1) { sigPageIdx++; updateSignPreview(); } });
+
+        // --- Placing & Dragging Signature ---
+        function isCanvasBlank(canvas) {
+            const blank = document.createElement('canvas'); blank.width = canvas.width; blank.height = canvas.height;
+            return canvas.toDataURL() === blank.toDataURL();
+        }
+
+        function hideSignatureOverlay() {
+            sigOverlay.classList.add('hidden'); sigControls.classList.add('hidden'); placeSigBtn.disabled = false;
+        }
+
+        placeSigBtn.addEventListener('click', () => {
+            if (isCanvasBlank(sigCanvas)) { alert("กรุณาวาดลายเซ็นก่อนครับ"); return; }
             
-            a.href = url; a.download = newName;
-            document.body.appendChild(a); a.click();
-            document.body.removeChild(a); URL.revokeObjectURL(url);
+            // Crop blank space (Simple implementation: just take whole canvas)
+            // In a real app, you'd calculate bounding box. Here we use the full canvas transparent PNG.
+            sigOverlayImg.src = sigCanvas.toDataURL("image/png");
+            
+            // Reset position & size
+            sigOverlay.style.left = '50%'; sigOverlay.style.top = '50%';
+            sigSizeSlider.value = 150; sigOverlayImg.style.width = '150px';
+            
+            sigOverlay.classList.remove('hidden'); sigControls.classList.remove('hidden');
+            placeSigBtn.disabled = true; // Prevent multiple until applied/removed
         });
 
-        // เปิด Modal เลือกหน้าเพื่อดาวน์โหลดรูปภาพ
+        removeSigBtn.addEventListener('click', hideSignatureOverlay);
+
+        sigSizeSlider.addEventListener('input', (e) => {
+            sigOverlayImg.style.width = e.target.value + 'px';
+        });
+
+        // Drag Logic
+        let dragActive = false, startX, startY, initialLeft, initialTop;
+        
+        function dragStart(e) {
+            if(e.target === removeSigBtn || e.target.closest('#removeSigBtn')) return;
+            e.preventDefault(); dragActive = true;
+            startX = e.touches ? e.touches[0].clientX : e.clientX;
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+            initialLeft = sigOverlay.offsetLeft; initialTop = sigOverlay.offsetTop;
+        }
+
+        function dragMove(e) {
+            if (!dragActive) return; e.preventDefault();
+            const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            // Calculate new positions (centered based)
+            let newLeft = initialLeft + (currentX - startX);
+            let newTop = initialTop + (currentY - startY);
+            
+            // Constrain to container
+            const containerRect = pdfPreviewContainer.getBoundingClientRect();
+            newLeft = Math.max(0, Math.min(newLeft, containerRect.width));
+            newTop = Math.max(0, Math.min(newTop, containerRect.height));
+
+            sigOverlay.style.left = newLeft + 'px';
+            sigOverlay.style.top = newTop + 'px';
+        }
+
+        function dragEnd() { dragActive = false; }
+
+        sigOverlay.addEventListener('mousedown', dragStart); window.addEventListener('mousemove', dragMove); window.addEventListener('mouseup', dragEnd);
+        sigOverlay.addEventListener('touchstart', dragStart, {passive: false}); window.addEventListener('touchmove', dragMove, {passive: false}); window.addEventListener('touchend', dragEnd);
+
+        // --- Apply (Merge) Signature to Page ---
+        applySigBtn.addEventListener('click', () => {
+            const originalText = applySigBtn.innerHTML;
+            applySigBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> กำลังประทับตรา...';
+            applySigBtn.disabled = true;
+
+            setTimeout(() => { // allow UI to update
+                const bgImg = new Image();
+                bgImg.onload = () => {
+                    // Create an off-screen canvas at the exact intrinsic resolution of the PDF Page image
+                    const c = document.createElement('canvas');
+                    c.width = bgImg.width; c.height = bgImg.height;
+                    const ctx = c.getContext('2d');
+                    
+                    // 1. Draw PDF Page Background
+                    ctx.drawImage(bgImg, 0, 0);
+
+                    // 2. Calculate Scale Ratio (Intrinsic size vs Displayed size in container)
+                    const containerRect = pdfPreviewContainer.getBoundingClientRect();
+                    const scaleX = bgImg.width / containerRect.width;
+                    const scaleY = bgImg.height / containerRect.height;
+
+                    // 3. Get Signature Metrics
+                    const sigRect = sigOverlay.getBoundingClientRect();
+                    const containerOffset = pdfPreviewContainer.getBoundingClientRect();
+                    
+                    // Calculate exact pixel position on intrinsic image
+                    const x = (sigRect.left - containerOffset.left) * scaleX;
+                    const y = (sigRect.top - containerOffset.top) * scaleY;
+                    const w = sigRect.width * scaleX;
+                    const h = sigRect.height * scaleY;
+
+                    // 4. Draw Signature Overlay
+                    const sImg = new Image();
+                    sImg.onload = () => {
+                        ctx.drawImage(sImg, x, y, w, h);
+                        
+                        // 5. Save back to our source of truth
+                        compressedImages[sigPageIdx] = c.toDataURL('image/jpeg', 0.9);
+                        hasUnsavedSignatures = true;
+                        
+                        // 6. Reset UI
+                        updateSignPreview(); // reload the new flattened image
+                        hideSignatureOverlay();
+                        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); // clear pad
+                        
+                        applySigBtn.innerHTML = originalText;
+                        applySigBtn.disabled = false;
+                        
+                        // Small success animation or alert
+                        const toast = document.createElement('div');
+                        toast.className = 'absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg text-sm z-50 animate-fade-in';
+                        toast.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i> ประทับลายเซ็นสำเร็จ!';
+                        pdfPreviewContainer.appendChild(toast);
+                        lucide.createIcons();
+                        setTimeout(() => toast.remove(), 2000);
+                    };
+                    sImg.src = sigOverlayImg.src;
+                };
+                bgImg.src = compressedImages[sigPageIdx];
+            }, 50);
+        });
+
+        // ---------------------------------------------------------
+        // 5. ZIP Image Download (Modal & Logic)
+        // ---------------------------------------------------------
+        const pageSelectModal = document.getElementById('pageSelectModal');
+        const pageGrid = document.getElementById('pageGrid');
+        const downloadImgBtn = document.getElementById('downloadImgBtn');
+        const confirmZipBtn = document.getElementById('confirmZipBtn');
+
         downloadImgBtn.addEventListener('click', () => {
             if (compressedImages.length === 0) return;
-            
-            pageGrid.innerHTML = ''; // เคลียร์ของเก่า
-            
+            pageGrid.innerHTML = '';
             compressedImages.forEach((imgData, index) => {
                 const pageNum = index + 1;
                 const div = document.createElement('div');
-                // คลาสเริ่มต้น (ถูกเลือก) มีกรอบสีแดง (แบรนด์) ชัดเจน
                 div.className = 'page-card relative flex flex-col p-2 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md bg-brand-50 border-brand-500';
-                
                 div.innerHTML = `
                     <div class="relative w-full aspect-[1/1.4] bg-gray-100 rounded-lg overflow-hidden border border-gray-200 mb-3 pointer-events-none">
-                        <img src="${imgData}" class="w-full h-full object-contain pointer-events-none" alt="หน้า ${pageNum}">
+                        <img src="${imgData}" class="w-full h-full object-contain pointer-events-none">
                     </div>
                     <div class="flex items-center justify-center gap-2 pointer-events-none">
-                        <input type="checkbox" id="page_${pageNum}" value="${index}" class="page-checkbox w-5 h-5 text-brand-600 rounded border-gray-300 focus:ring-brand-500 pointer-events-none" checked>
-                        <label for="page_${pageNum}" class="text-sm font-medium text-gray-800 select-none pointer-events-none">หน้า ${pageNum}</label>
-                    </div>
-                `;
-                
-                // อัปเดตสไตล์เมื่อมีการคลิกเลือก/ยกเลิก
+                        <input type="checkbox" value="${index}" class="page-checkbox w-5 h-5 text-brand-600 rounded border-gray-300 focus:ring-brand-500 pointer-events-none" checked>
+                        <label class="text-sm font-medium text-gray-800 select-none pointer-events-none">หน้า ${pageNum}</label>
+                    </div>`;
                 div.addEventListener('click', () => {
-                    const cb = div.querySelector('input');
-                    cb.checked = !cb.checked;
-                    updateCardStyle(div, cb.checked);
+                    const cb = div.querySelector('input'); cb.checked = !cb.checked;
+                    if(cb.checked) { div.classList.add('bg-brand-50', 'border-brand-500'); div.classList.remove('bg-white', 'border-gray-100', 'opacity-70'); }
+                    else { div.classList.remove('bg-brand-50', 'border-brand-500'); div.classList.add('bg-white', 'border-gray-100', 'opacity-70'); }
                 });
-                
                 pageGrid.appendChild(div);
             });
-            
             pageSelectModal.classList.remove('hidden');
         });
 
-        // ฟังก์ชันช่วยสลับสีการ์ด
-        function updateCardStyle(cardDiv, isChecked) {
-            if(isChecked) {
-                cardDiv.classList.add('bg-brand-50', 'border-brand-500');
-                cardDiv.classList.remove('bg-white', 'border-gray-100', 'opacity-70');
-            } else {
-                cardDiv.classList.remove('bg-brand-50', 'border-brand-500');
-                cardDiv.classList.add('bg-white', 'border-gray-100', 'opacity-70');
-            }
-        }
+        document.getElementById('closeModalBtn').addEventListener('click', () => pageSelectModal.classList.add('hidden'));
+        document.getElementById('cancelModalBtn').addEventListener('click', () => pageSelectModal.classList.add('hidden'));
 
-        // จัดการปุ่มใน Modal
-        closeModalBtn.addEventListener('click', () => pageSelectModal.classList.add('hidden'));
-        cancelModalBtn.addEventListener('click', () => pageSelectModal.classList.add('hidden'));
-
-        selectAllBtn.addEventListener('click', () => {
-            document.querySelectorAll('.page-card').forEach(card => {
-                const cb = card.querySelector('.page-checkbox');
-                cb.checked = true;
-                updateCardStyle(card, true);
-            });
+        document.getElementById('selectAllBtn').addEventListener('click', () => {
+            document.querySelectorAll('.page-card').forEach(card => { card.querySelector('input').checked = true; card.classList.add('bg-brand-50', 'border-brand-500'); card.classList.remove('bg-white', 'border-gray-100', 'opacity-70'); });
+        });
+        document.getElementById('deselectAllBtn').addEventListener('click', () => {
+            document.querySelectorAll('.page-card').forEach(card => { card.querySelector('input').checked = false; card.classList.remove('bg-brand-50', 'border-brand-500'); card.classList.add('bg-white', 'border-gray-100', 'opacity-70'); });
         });
 
-        deselectAllBtn.addEventListener('click', () => {
-            document.querySelectorAll('.page-card').forEach(card => {
-                const cb = card.querySelector('.page-checkbox');
-                cb.checked = false;
-                updateCardStyle(card, false);
-            });
-        });
-
-        // ยืนยันสร้าง ZIP เฉพาะหน้าที่เลือก
         confirmZipBtn.addEventListener('click', async () => {
-            // ดึงค่าหน้าที่ถูกติ๊กเลือกมาเฉพาะ index
             const selectedIndexes = Array.from(document.querySelectorAll('.page-checkbox:checked')).map(cb => parseInt(cb.value));
+            if (selectedIndexes.length === 0) { alert("กรุณาเลือกอย่างน้อย 1 หน้า"); return; }
             
-            if (selectedIndexes.length === 0) {
-                alert("กรุณาเลือกอย่างน้อย 1 หน้าเพื่อทำการดาวน์โหลดครับ");
-                return;
-            }
-
-            const originalText = confirmZipBtn.innerHTML;
-            confirmZipBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>กำลังสร้าง ZIP...</span>';
-            lucide.createIcons();
-            confirmZipBtn.disabled = true;
+            const orig = confirmZipBtn.innerHTML; confirmZipBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>สร้าง ZIP...</span>'; confirmZipBtn.disabled = true; lucide.createIcons();
 
             try {
                 const zip = new JSZip();
                 const folderName = currentFile.name.replace(/\.[^/.]+$/, "") + "_images";
                 const imgFolder = zip.folder(folderName);
-
-                // แพ็กเฉพาะหน้าที่เลือกเข้า ZIP
                 selectedIndexes.forEach(index => {
-                    const dataUrl = compressedImages[index];
-                    const base64Data = dataUrl.split(',')[1];
-                    const pageNum = String(index + 1).padStart(3, '0');
-                    imgFolder.file(`page_${pageNum}.jpg`, base64Data, {base64: true});
+                    imgFolder.file(`page_${String(index + 1).padStart(3, '0')}.jpg`, compressedImages[index].split(',')[1], {base64: true});
                 });
-
                 const content = await zip.generateAsync({type:"blob"});
-                const url = URL.createObjectURL(content);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${folderName}.zip`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                pageSelectModal.classList.add('hidden'); // ปิด Modal อัตโนมัติเมื่อเสร็จ
-            } catch (error) {
-                console.error("ZIP Error:", error);
-                alert("เกิดข้อผิดพลาดในการสร้างไฟล์ ZIP");
-            } finally {
-                confirmZipBtn.innerHTML = originalText;
-                lucide.createIcons();
-                confirmZipBtn.disabled = false;
-            }
+                const a = document.createElement('a'); a.href = URL.createObjectURL(content); a.download = `${folderName}.zip`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                pageSelectModal.classList.add('hidden');
+            } catch (error) { alert("เกิดข้อผิดพลาดในการสร้าง ZIP"); } 
+            finally { confirmZipBtn.innerHTML = orig; confirmZipBtn.disabled = false; lucide.createIcons(); }
         });
 
     </script>
