@@ -49,6 +49,9 @@
     <!-- jsPDF สำหรับสร้างไฟล์ PDF ใหม่ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
+    <!-- JSZip สำหรับรวมไฟล์รูปภาพเป็น ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
     <!-- Google Identity Services (Google API) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -210,14 +213,17 @@
                     </div>
 
                     <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                        <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-                            <i data-lucide="download" class="w-5 h-5"></i>
-                            <span>ดาวน์โหลดไฟล์</span>
-                        </button>
-                        <button id="resetBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition-colors">
-                            ย่อไฟล์อื่นต่อ
-                        </button>
-                    </div>
+                    <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                        <span>ดาวน์โหลด PDF</span>
+                    </button>
+                    <button id="downloadImgBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg flex items-center justify-center space-x-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed">
+                        <i data-lucide="image" class="w-5 h-5"></i>
+                        <span>ดาวน์โหลดรูป (ZIP)</span>
+                    </button>
+                    <button id="resetBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-6 rounded-lg transition-colors">
+                        ย่อไฟล์อื่นต่อ
+                    </button>
                 </div>
             </div>
         </div>
@@ -331,10 +337,12 @@
         const oldSizeTxt = document.getElementById('oldSizeTxt');
         const newSizeTxt = document.getElementById('newSizeTxt');
         const downloadBtn = document.getElementById('downloadBtn');
+        const downloadImgBtn = document.getElementById('downloadImgBtn');
         const resetBtn = document.getElementById('resetBtn');
 
         let currentFile = null;
         let compressedBlob = null;
+        let compressedImages = [];
 
         const QUALITY_SETTINGS = {
             'low': { scale: 1.5, jpegQuality: 0.5 },
@@ -380,7 +388,7 @@
         }
 
         function resetUI() {
-            currentFile = null; compressedBlob = null; fileInput.value = '';
+            currentFile = null; compressedBlob = null; compressedImages = []; fileInput.value = '';
             dropZone.classList.remove('hidden'); fileInfo.classList.add('hidden');
             actionArea.classList.add('hidden'); progressArea.classList.add('hidden');
             resultArea.classList.add('hidden'); progressBar.style.width = '0%';
@@ -416,10 +424,13 @@
                     canvas.width = renderViewport.width; canvas.height = renderViewport.height;
 
                     await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
-                    const imgData = canvas.toDataURL('image/jpeg', settings.jpegQuality);
+                const imgData = canvas.toDataURL('image/jpeg', settings.jpegQuality);
 
-                    const orientation = unscaledViewport.width > unscaledViewport.height ? 'l' : 'p';
-                    const format = [unscaledViewport.width, unscaledViewport.height];
+                // เก็บรูปภาพแต่ละหน้าไว้สำหรับ Export เป็น ZIP
+                compressedImages.push(imgData);
+
+                const orientation = unscaledViewport.width > unscaledViewport.height ? 'l' : 'p';
+                const format = [unscaledViewport.width, unscaledViewport.height];
 
                     if (i === 1) {
                         newPdf = new jsPDF({ orientation: orientation, unit: 'pt', format: format });
@@ -472,6 +483,46 @@
             a.href = url; a.download = newName;
             document.body.appendChild(a); a.click();
             document.body.removeChild(a); URL.revokeObjectURL(url);
+        });
+
+        // จัดการปุ่มดาวน์โหลดรูปภาพเป็น ZIP
+        downloadImgBtn.addEventListener('click', async () => {
+            if (compressedImages.length === 0) return;
+            
+            const originalText = downloadImgBtn.innerHTML;
+            downloadImgBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>กำลังสร้าง ZIP...</span>';
+            lucide.createIcons();
+            downloadImgBtn.disabled = true;
+
+            try {
+                const zip = new JSZip();
+                const folderName = currentFile.name.replace(/\.[^/.]+$/, "") + "_images";
+                const imgFolder = zip.folder(folderName);
+
+                compressedImages.forEach((dataUrl, index) => {
+                    const base64Data = dataUrl.split(',')[1];
+                    // รันเลขหน้า PDF เช่น page_001.jpg, page_002.jpg
+                    const pageNum = String(index + 1).padStart(3, '0');
+                    imgFolder.file(`page_${pageNum}.jpg`, base64Data, {base64: true});
+                });
+
+                const content = await zip.generateAsync({type:"blob"});
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${folderName}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error("ZIP Error:", error);
+                alert("เกิดข้อผิดพลาดในการสร้างไฟล์ ZIP");
+            } finally {
+                downloadImgBtn.innerHTML = originalText;
+                lucide.createIcons();
+                downloadImgBtn.disabled = false;
+            }
         });
 
     </script>
