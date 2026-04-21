@@ -233,7 +233,7 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-gray-900">ระบบเซ็นเอกสาร</h3>
-                        <p class="text-sm text-gray-500 hidden sm:block">วาดลายเซ็นและลากวางในตำแหน่งที่ต้องการ</p>
+                        <p class="text-sm text-gray-500 hidden sm:block">วาดลายเซ็นหรืออัปโหลดรูปภาพ แล้วลากวางในตำแหน่งที่ต้องการ</p>
                     </div>
                 </div>
                 <button id="closeSignModalBtn" class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors">
@@ -271,7 +271,7 @@
                 <!-- Right: Tools -->
                 <div class="w-full md:w-80 bg-white p-6 shrink-0 overflow-y-auto flex flex-col shadow-[-4px_0_15px_rgba(0,0,0,0.05)] z-20">
                     <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i data-lucide="edit-3" class="w-5 h-5 text-amber-500"></i> กระดานเซ็นชื่อ
+                        <i data-lucide="edit-3" class="w-5 h-5 text-amber-500"></i> ลายเซ็นของคุณ
                     </h4>
                     
                     <div class="border border-gray-200 rounded-xl bg-gray-50 mb-3 relative overflow-hidden">
@@ -281,12 +281,27 @@
                         </div>
                     </div>
                     
-                    <div class="flex gap-2 mb-6">
+                    <div class="flex gap-2 mb-4">
                         <button id="clearSigBtn" class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
                             ล้างกระดาน
                         </button>
                         <button id="placeSigBtn" class="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                            วางบนเอกสาร
+                            ใช้อันที่วาด
+                        </button>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="relative flex items-center py-2 mb-4">
+                        <div class="flex-grow border-t border-gray-200"></div>
+                        <span class="flex-shrink-0 mx-4 text-gray-400 text-xs font-medium">หรือ</span>
+                        <div class="flex-grow border-t border-gray-200"></div>
+                    </div>
+
+                    <!-- Upload Signature File -->
+                    <div class="mb-6">
+                        <input type="file" id="uploadSigInput" accept="image/png, image/jpeg" class="hidden">
+                        <button id="uploadSigBtn" class="w-full py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
+                            <i data-lucide="upload" class="w-4 h-4"></i> อัปโหลดไฟล์ลายเซ็น
                         </button>
                     </div>
 
@@ -523,11 +538,13 @@
         const pdfPageImage = document.getElementById('pdfPageImage');
         const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
 
-        // Signature Pad
+        // Signature Pad & Upload
         const sigCanvas = document.getElementById('sigPadCanvas');
         const sigCtx = sigCanvas.getContext('2d');
         const clearSigBtn = document.getElementById('clearSigBtn');
         const placeSigBtn = document.getElementById('placeSigBtn');
+        const uploadSigInput = document.getElementById('uploadSigInput');
+        const uploadSigBtn = document.getElementById('uploadSigBtn');
         
         // Draggable Overlay
         const sigOverlay = document.getElementById('sigOverlay');
@@ -607,15 +624,14 @@
         }
 
         function hideSignatureOverlay() {
-            sigOverlay.classList.add('hidden'); sigControls.classList.add('hidden'); placeSigBtn.disabled = false;
+            sigOverlay.classList.add('hidden'); sigControls.classList.add('hidden'); 
+            placeSigBtn.disabled = false;
+            uploadSigBtn.disabled = false;
         }
 
-        placeSigBtn.addEventListener('click', () => {
-            if (isCanvasBlank(sigCanvas)) { alert("กรุณาวาดลายเซ็นก่อนครับ"); return; }
-            
-            // Crop blank space (Simple implementation: just take whole canvas)
-            // In a real app, you'd calculate bounding box. Here we use the full canvas transparent PNG.
-            sigOverlayImg.src = sigCanvas.toDataURL("image/png");
+        // ฟังก์ชันช่วยวางลายเซ็น (ใช้ได้ทั้งวาดเองและอัปโหลด)
+        function placeSignatureImage(srcUrl) {
+            sigOverlayImg.src = srcUrl;
             
             // Reset position & size
             sigOverlay.style.left = '50%'; sigOverlay.style.top = '50%';
@@ -623,6 +639,28 @@
             
             sigOverlay.classList.remove('hidden'); sigControls.classList.remove('hidden');
             placeSigBtn.disabled = true; // Prevent multiple until applied/removed
+            uploadSigBtn.disabled = true;
+        }
+
+        // วางลายเซ็นจากการวาด
+        placeSigBtn.addEventListener('click', () => {
+            if (isCanvasBlank(sigCanvas)) { alert("กรุณาวาดลายเซ็นก่อนครับ"); return; }
+            placeSignatureImage(sigCanvas.toDataURL("image/png"));
+        });
+
+        // อัปโหลดไฟล์ลายเซ็น
+        uploadSigBtn.addEventListener('click', () => uploadSigInput.click());
+
+        uploadSigInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                placeSignatureImage(event.target.result);
+                uploadSigInput.value = ''; // Reset input ให้สามารถอัปโหลดรูปเดิมซ้ำได้
+            };
+            reader.readAsDataURL(file);
         });
 
         removeSigBtn.addEventListener('click', hideSignatureOverlay);
