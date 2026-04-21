@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Compressor & Sign - THE STANDARD</title>
+    <title>PDF Compressor & Sign - THE STANDARD</title> 
     
     <!-- Google Fonts: Prompt -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -523,7 +523,7 @@
         });
 
         // ---------------------------------------------------------
-        // 4. SIGNATURE SYSTEM (New)
+        // 4. SIGNATURE SYSTEM
         // ---------------------------------------------------------
         const signModal = document.getElementById('signModal');
         const openSignBtn = document.getElementById('openSignBtn');
@@ -689,10 +689,10 @@
             let newLeft = initialLeft + (currentX - startX);
             let newTop = initialTop + (currentY - startY);
             
-            // Constrain to container
-            const containerRect = pdfPreviewContainer.getBoundingClientRect();
-            newLeft = Math.max(0, Math.min(newLeft, containerRect.width));
-            newTop = Math.max(0, Math.min(newTop, containerRect.height));
+            // Constrain to image bounds rather than container bounds for accuracy
+            const imgRect = pdfPageImage.getBoundingClientRect();
+            newLeft = Math.max(0, Math.min(newLeft, imgRect.width));
+            newTop = Math.max(0, Math.min(newTop, imgRect.height));
 
             sigOverlay.style.left = newLeft + 'px';
             sigOverlay.style.top = newTop + 'px';
@@ -705,6 +705,10 @@
 
         // --- Apply (Merge) Signature to Page ---
         applySigBtn.addEventListener('click', () => {
+            // ดึงพิกัดก่อนที่จะมีการกดปุ่มหรือ re-render เพื่อความแม่นยำที่สุด (ป้องกัน UI ขยับ)
+            const imgRect = pdfPageImage.getBoundingClientRect();
+            const sigImgRect = sigOverlayImg.getBoundingClientRect();
+
             const originalText = applySigBtn.innerHTML;
             applySigBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> กำลังประทับตรา...';
             applySigBtn.disabled = true;
@@ -720,20 +724,15 @@
                     // 1. Draw PDF Page Background
                     ctx.drawImage(bgImg, 0, 0);
 
-                    // 2. Calculate Scale Ratio (Intrinsic size vs Displayed size in container)
-                    const containerRect = pdfPreviewContainer.getBoundingClientRect();
-                    const scaleX = bgImg.width / containerRect.width;
-                    const scaleY = bgImg.height / containerRect.height;
+                    // 2. Calculate Scale Ratio (Intrinsic size vs Displayed size of the image itself)
+                    const scaleX = bgImg.width / imgRect.width;
+                    const scaleY = bgImg.height / imgRect.height;
 
-                    // 3. Get Signature Metrics
-                    const sigRect = sigOverlay.getBoundingClientRect();
-                    const containerOffset = pdfPreviewContainer.getBoundingClientRect();
-                    
-                    // Calculate exact pixel position on intrinsic image
-                    const x = (sigRect.left - containerOffset.left) * scaleX;
-                    const y = (sigRect.top - containerOffset.top) * scaleY;
-                    const w = sigRect.width * scaleX;
-                    const h = sigRect.height * scaleY;
+                    // 3. Calculate exact pixel position on intrinsic image
+                    const x = (sigImgRect.left - imgRect.left) * scaleX;
+                    const y = (sigImgRect.top - imgRect.top) * scaleY;
+                    const w = sigImgRect.width * scaleX;
+                    const h = sigImgRect.height * scaleY;
 
                     // 4. Draw Signature Overlay
                     const sImg = new Image();
