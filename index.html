@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Compressor & Sign - THE STANDARD</title>
+    <title>THE STANDARD - PDF Tools (Compress, Merge, Sign)</title>
     
     <!-- Google Fonts: Prompt -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -57,7 +57,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
         /* Signature Area */
-        #sigPadCanvas { touch-action: none; /* Prevent scrolling while signing */ }
+        #sigPadCanvas { touch-action: none; }
         .draggable-sig { cursor: move; touch-action: none; }
     </style>
 </head>
@@ -86,7 +86,7 @@
             <div class="max-w-5xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-2">
                     <i data-lucide="file-down" class="w-6 h-6 text-brand-500"></i>
-                    <span class="font-bold text-gray-900 text-lg hidden sm:block">PDF Compressor & Sign</span>
+                    <span class="font-bold text-gray-900 text-lg hidden sm:block">PDF Tools</span>
                     <span class="font-bold text-gray-900 text-lg sm:hidden">PDF Tools</span>
                 </div>
                 <div class="flex items-center gap-4 bg-gray-50 px-4 py-1.5 rounded-full border border-gray-100">
@@ -101,7 +101,7 @@
         <div class="max-w-4xl mx-auto pt-10 px-4 sm:px-6 lg:px-8 w-full pb-12">
             <!-- Header -->
             <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">ระบบย่อขนาด & เซ็นไฟล์ PDF</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">ระบบจัดการไฟล์ PDF (ย่อ, รวม, เซ็น)</h2>
                 <p class="text-gray-600">จัดการไฟล์เอกสารของคุณง่ายๆ ปลอดภัย (ทำงานบนเครื่องของคุณ ไม่ส่งข้อมูลออกภายนอก)</p>
             </div>
 
@@ -109,30 +109,32 @@
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100">
                 <!-- Upload Zone -->
                 <div id="dropZone" class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer hover:bg-gray-50 mb-6">
-                    <input type="file" id="fileInput" accept="application/pdf" class="hidden">
+                    <!-- อนุญาตให้เลือกหลายไฟล์ -->
+                    <input type="file" id="fileInput" accept="application/pdf" multiple class="hidden">
                     <div class="flex flex-col items-center justify-center space-y-4">
                         <div class="bg-brand-100 p-4 rounded-full text-brand-500">
-                            <i data-lucide="upload-cloud" class="w-10 h-10"></i>
+                            <i data-lucide="file-plus-2" class="w-10 h-10"></i>
                         </div>
                         <div>
-                            <p class="text-lg font-medium text-gray-700">คลิกที่นี่เพื่อเลือกไฟล์ PDF</p>
-                            <p class="text-sm text-gray-500 mt-1">หรือลากไฟล์มาวางตรงนี้</p>
+                            <p class="text-lg font-medium text-gray-700">คลิกเพื่อเลือกไฟล์ PDF (เลือกได้หลายไฟล์)</p>
+                            <p class="text-sm text-gray-500 mt-1">หรือลากไฟล์ทั้งหมดมาวางตรงนี้เพื่อรวมไฟล์</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- File Info -->
-                <div id="fileInfo" class="hidden bg-brand-50 border border-brand-100 rounded-lg p-4 mb-6 flex items-center justify-between">
-                    <div class="flex items-center space-x-3 truncate">
-                        <i data-lucide="file-text" class="w-6 h-6 text-brand-500 flex-shrink-0"></i>
-                        <div class="truncate">
-                            <p id="fileName" class="font-medium text-sm text-gray-800 truncate"></p>
-                            <p id="fileSize" class="text-xs text-gray-500"></p>
+                <!-- File Info (Multiple Files) -->
+                <div id="fileInfo" class="hidden bg-brand-50 border border-brand-100 rounded-lg p-4 mb-6">
+                    <div class="flex justify-between items-start mb-3 border-b border-brand-200 pb-2">
+                        <h4 class="font-medium text-brand-700 text-sm">ไฟล์ที่เลือกเตรียมประมวลผล:</h4>
+                        <div class="flex gap-3">
+                            <button id="addMoreFilesBtn" class="text-xs text-brand-600 hover:text-brand-800 flex items-center gap-1 font-medium"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มไฟล์</button>
+                            <button id="removeFileBtn" class="text-xs text-gray-500 hover:text-red-500 flex items-center gap-1"><i data-lucide="trash-2" class="w-4 h-4"></i> ล้างทั้งหมด</button>
                         </div>
                     </div>
-                    <button id="removeFileBtn" class="text-gray-400 hover:text-red-500 p-2 transition-colors">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
+                    <ul id="fileListUI" class="text-sm text-gray-700 space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2">
+                        <!-- รายชื่อไฟล์จะแสดงที่นี่ -->
+                    </ul>
+                    <div class="mt-3 text-right text-xs text-gray-500 font-medium" id="totalSizeTxt"></div>
                 </div>
 
                 <!-- Settings & Action -->
@@ -166,7 +168,7 @@
 
                     <button id="compressBtn" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
                         <i data-lucide="zap" class="w-5 h-5"></i>
-                        <span>เริ่มประมวลผลไฟล์</span>
+                        <span id="compressBtnText">เริ่มประมวลผลไฟล์</span>
                     </button>
                 </div>
 
@@ -189,12 +191,12 @@
                     
                     <div class="flex justify-center items-center space-x-4 text-sm mb-6">
                         <div class="bg-gray-100 px-4 py-2 rounded-lg">
-                            <p class="text-gray-500 text-xs">ขนาดเดิม</p>
+                            <p class="text-gray-500 text-xs">ขนาดรวมเดิม</p>
                             <p id="oldSizeTxt" class="font-medium line-through text-gray-400"></p>
                         </div>
                         <i data-lucide="arrow-right" class="w-5 h-5 text-gray-400"></i>
                         <div class="bg-green-50 px-4 py-2 rounded-lg border border-green-200">
-                            <p class="text-green-600 text-xs font-medium">ขนาดใหม่ล่าสุด</p>
+                            <p class="text-green-600 text-xs font-medium">ขนาดใหม่ล่าสุด (ประมาณ)</p>
                             <p id="newSizeTxt" class="font-bold text-green-700"></p>
                         </div>
                     </div>
@@ -203,18 +205,18 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <button id="openSignBtn" class="bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
                             <i data-lucide="pen-tool" class="w-5 h-5"></i>
-                            <span>เซ็นเอกสาร</span>
+                            <span>ดู/เซ็นเอกสาร</span>
                         </button>
-                        <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                        <button id="downloadPdfBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-sm">
                             <i data-lucide="download" class="w-5 h-5"></i>
                             <span>โหลด PDF</span>
                         </button>
-                        <button id="downloadImgBtn" class="bg-brand-500 hover:bg-brand-600 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-                            <i data-lucide="image" class="w-5 h-5"></i>
-                            <span>โหลดรูป (ZIP)</span>
+                        <button id="downloadZipBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                            <i data-lucide="images" class="w-5 h-5"></i>
+                            <span>โหลดภาพ (ZIP)</span>
                         </button>
                         <button id="resetBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors">
-                            ทำไฟล์อื่น
+                            เริ่มใหม่ทั้งหมด
                         </button>
                     </div>
                 </div>
@@ -225,125 +227,85 @@
     <!-- ================= SIGNATURE MODAL ================= -->
     <div id="signModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm p-2 sm:p-4">
         <div class="bg-white rounded-2xl w-full max-w-6xl flex flex-col h-[95vh] shadow-2xl overflow-hidden">
-            <!-- Header -->
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="bg-amber-100 p-2 rounded-lg text-amber-600">
-                        <i data-lucide="pen-tool" class="w-6 h-6"></i>
-                    </div>
+                    <div class="bg-amber-100 p-2 rounded-lg text-amber-600"><i data-lucide="pen-tool" class="w-6 h-6"></i></div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900">ระบบเซ็นเอกสาร</h3>
-                        <p class="text-sm text-gray-500 hidden sm:block">วาดลายเซ็นหรืออัปโหลดรูปภาพ แล้วลากวางในตำแหน่งที่ต้องการ</p>
+                        <h3 class="text-xl font-bold text-gray-900">พรีวิว & เซ็นเอกสาร</h3>
+                        <p class="text-sm text-gray-500 hidden sm:block">ตรวจดูเอกสารที่รวมแล้ว วาดลายเซ็นและลากวางในตำแหน่งที่ต้องการ</p>
                     </div>
                 </div>
-                <button id="closeSignModalBtn" class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
+                <button id="closeSignModalBtn" class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
 
-            <!-- Body: 2 Columns -->
             <div class="flex-1 flex flex-col md:flex-row overflow-hidden bg-gray-100">
-                
-                <!-- Left: Document Preview -->
                 <div class="flex-1 overflow-auto custom-scrollbar relative p-4 flex flex-col items-center border-r border-gray-200">
-                    <!-- Page Navigation -->
                     <div class="flex items-center gap-4 bg-white px-4 py-2 rounded-full shadow-sm mb-4 sticky top-0 z-10 shrink-0">
                         <button id="sigPrevPageBtn" class="p-1 rounded hover:bg-gray-100 text-gray-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
                         <span id="sigPageIndicator" class="text-sm font-medium">หน้า 1 / 1</span>
                         <button id="sigNextPageBtn" class="p-1 rounded hover:bg-gray-100 text-gray-600"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
                     </div>
-
-                    <!-- PDF Page Container -->
                     <div id="pdfPreviewContainer" class="relative bg-white shadow-md select-none inline-block shrink-0">
                         <img id="pdfPageImage" src="" alt="Document Preview" class="block pointer-events-none" style="max-width: 100%; max-height: 70vh; width: auto; height: auto;">
-                        
-                        <!-- Draggable Signature Overlay (Hidden initially) -->
                         <div id="sigOverlay" class="draggable-sig hidden absolute border-2 border-dashed border-blue-500 p-1 bg-blue-500 bg-opacity-10" style="left: 50%; top: 50%; transform: translate(-50%, -50%);">
                             <img id="sigOverlayImg" src="" class="pointer-events-none block" style="width: 150px; height: auto;">
-                            <!-- Close sig button -->
-                            <button id="removeSigBtn" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600">
-                                <i data-lucide="x" class="w-3 h-3"></i>
-                            </button>
+                            <button id="removeSigBtn" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600"><i data-lucide="x" class="w-3 h-3"></i></button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Tools -->
                 <div class="w-full md:w-80 bg-white p-6 shrink-0 overflow-y-auto flex flex-col shadow-[-4px_0_15px_rgba(0,0,0,0.05)] z-20">
-                    <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <i data-lucide="edit-3" class="w-5 h-5 text-amber-500"></i> ลายเซ็นของคุณ
-                    </h4>
-                    
+                    <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="edit-3" class="w-5 h-5 text-amber-500"></i> ลายเซ็นของคุณ</h4>
                     <div class="border border-gray-200 rounded-xl bg-gray-50 mb-3 relative overflow-hidden">
                         <canvas id="sigPadCanvas" width="300" height="150" class="w-full h-[150px] cursor-crosshair bg-white"></canvas>
-                        <div class="absolute bottom-2 left-0 w-full flex justify-center pointer-events-none">
-                            <div class="w-3/4 border-b border-dashed border-gray-300"></div>
-                        </div>
+                        <div class="absolute bottom-2 left-0 w-full flex justify-center pointer-events-none"><div class="w-3/4 border-b border-dashed border-gray-300"></div></div>
                     </div>
-                    
                     <div class="flex gap-2 mb-4">
-                        <button id="clearSigBtn" class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
-                            ล้างกระดาน
-                        </button>
-                        <button id="placeSigBtn" class="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                            ใช้อันที่วาด
-                        </button>
+                        <button id="clearSigBtn" class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg">ล้างกระดาน</button>
+                        <button id="placeSigBtn" class="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg shadow-sm">ใช้อันที่วาด</button>
                     </div>
-
-                    <!-- Divider -->
                     <div class="relative flex items-center py-2 mb-4">
-                        <div class="flex-grow border-t border-gray-200"></div>
-                        <span class="flex-shrink-0 mx-4 text-gray-400 text-xs font-medium">หรือ</span>
-                        <div class="flex-grow border-t border-gray-200"></div>
+                        <div class="flex-grow border-t border-gray-200"></div><span class="flex-shrink-0 mx-4 text-gray-400 text-xs font-medium">หรือ</span><div class="flex-grow border-t border-gray-200"></div>
                     </div>
-
-                    <!-- Upload Signature File -->
                     <div class="mb-6">
                         <input type="file" id="uploadSigInput" accept="image/png, image/jpeg" class="hidden">
-                        <button id="uploadSigBtn" class="w-full py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
-                            <i data-lucide="upload" class="w-4 h-4"></i> อัปโหลดไฟล์ลายเซ็น
-                        </button>
+                        <button id="uploadSigBtn" class="w-full py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg shadow-sm flex items-center justify-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i> อัปโหลดไฟล์ลายเซ็น</button>
                     </div>
 
-                    <!-- Overlay Controls (Visible only when signature is placed) -->
-                    <div id="sigControls" class="hidden p-4 bg-blue-50 border border-blue-100 rounded-xl mb-6 space-y-4 animate-fade-in">
+                    <div id="sigControls" class="hidden p-4 bg-blue-50 border border-blue-100 rounded-xl mb-6 space-y-4">
                         <p class="text-xs font-medium text-blue-800"><i data-lucide="info" class="w-3 h-3 inline"></i> ลากที่กรอบเพื่อเลื่อนตำแหน่ง</p>
-                        
                         <div>
                             <label class="text-xs font-medium text-gray-700 mb-1 block">ปรับขนาดลายเซ็น:</label>
                             <input type="range" id="sigSizeSlider" min="50" max="400" value="150" class="w-full h-1.5 bg-blue-200 rounded-lg appearance-none cursor-pointer">
                         </div>
-
-                        <button id="applySigBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
-                            <i data-lucide="stamp" class="w-4 h-4"></i> ประทับลายเซ็นลงกระดาษ
-                        </button>
+                        <button id="applySigBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm flex items-center justify-center gap-2"><i data-lucide="stamp" class="w-4 h-4"></i> ประทับลายเซ็นลงหน้าปัจจุบัน</button>
                     </div>
 
                     <div class="mt-auto pt-6 border-t border-gray-100">
-                        <button id="finishSignBtn" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors shadow-md">
-                            เสร็จสิ้น / ยืนยันการแก้ไข
-                        </button>
+                        <button id="finishSignBtn" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md">เสร็จสิ้นการแก้พรีวิว</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ================= PAGE SELECTION MODAL (ZIP) ================= -->
+    <!-- ================= UNIVERSAL PAGE SELECTION MODAL ================= -->
+    <!-- ใช้ Modal ร่วมกันทั้งตอนจะดาวน์โหลด PDF หรือ ZIP -->
     <div id="pageSelectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="bg-brand-100 p-2 rounded-lg text-brand-500"><i data-lucide="images" class="w-6 h-6"></i></div>
+                    <div id="modalIconBg" class="bg-brand-100 p-2 rounded-lg text-brand-500"><i id="modalIcon" data-lucide="layers" class="w-6 h-6"></i></div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900">เลือกหน้าเพื่อดาวน์โหลดรูป</h3>
+                        <h3 id="modalTitle" class="text-xl font-bold text-gray-900">เลือกหน้าเอกสาร</h3>
+                        <p class="text-sm text-gray-500 mt-1">คลิกที่รูปเพื่อเลือกหน้าที่จะรวมเป็นไฟล์สำหรับดาวน์โหลด</p>
                     </div>
                 </div>
                 <button id="closeModalBtn" class="text-gray-400 hover:bg-gray-200 p-2 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
             <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
                 <div class="flex justify-between items-center mb-4">
-                    <span class="text-sm font-medium text-gray-700">รายการหน้าทั้งหมด:</span>
+                    <span class="text-sm font-medium text-gray-700">รายการหน้าทั้งหมดในระบบ:</span>
                     <div class="space-x-2 flex items-center">
                         <button id="selectAllBtn" class="text-sm text-brand-600 hover:text-brand-800 font-medium px-3 py-1 rounded hover:bg-brand-50">เลือกทั้งหมด</button>
                         <span class="text-gray-300">|</span>
@@ -354,8 +316,8 @@
             </div>
             <div class="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 shrink-0">
                 <button id="cancelModalBtn" class="px-5 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-gray-200">ยกเลิก</button>
-                <button id="confirmZipBtn" class="px-5 py-2.5 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 flex items-center gap-2">
-                    <i data-lucide="download" class="w-5 h-5"></i> <span>บันทึก ZIP</span>
+                <button id="confirmSelectionBtn" class="px-5 py-2.5 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 flex items-center gap-2">
+                    <i id="confirmBtnIcon" data-lucide="download" class="w-5 h-5"></i> <span id="confirmBtnText">ดำเนินการต่อ</span>
                 </button>
             </div>
         </div>
@@ -403,13 +365,12 @@
         });
 
         // ---------------------------------------------------------
-        // 2. Core App State & File Logic
+        // 2. Core App State & File Logic (Multiple Files / Merge)
         // ---------------------------------------------------------
-        let currentFile = null;
-        let compressedBlob = null;
-        let compressedImages = []; // Stores Base64 of each page (Main Source of Truth)
-        let unscaledFormats = [];  // To remember original dimensions for rebuilding PDF
-        let hasUnsavedSignatures = false; // Flag to rebuild PDF
+        let currentFiles = []; // เปลี่ยนเป็นเก็บ Array ของไฟล์เพื่อทำฟีเจอร์ Merge
+        let compressedImages = []; 
+        let unscaledFormats = [];  
+        let hasUnsavedSignatures = false; 
 
         const QUALITY_SETTINGS = { 'low': { scale: 1.5, jpegQuality: 0.5 }, 'medium': { scale: 2.0, jpegQuality: 0.7 }, 'high': { scale: 3.0, jpegQuality: 0.85 } };
 
@@ -420,117 +381,125 @@
         }
 
         // DOM Setup for File Upload
-        const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('fileInput'), fileInfo = document.getElementById('fileInfo'), fileName = document.getElementById('fileName'), fileSize = document.getElementById('fileSize'), removeFileBtn = document.getElementById('removeFileBtn'), actionArea = document.getElementById('actionArea'), compressBtn = document.getElementById('compressBtn'), progressArea = document.getElementById('progressArea'), progressBar = document.getElementById('progressBar'), progressText = document.getElementById('progressText'), resultArea = document.getElementById('resultArea'), oldSizeTxt = document.getElementById('oldSizeTxt'), newSizeTxt = document.getElementById('newSizeTxt'), resetBtn = document.getElementById('resetBtn');
+        const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('fileInput'), fileInfo = document.getElementById('fileInfo'), fileListUI = document.getElementById('fileListUI'), totalSizeTxt = document.getElementById('totalSizeTxt'), addMoreFilesBtn = document.getElementById('addMoreFilesBtn'), removeFileBtn = document.getElementById('removeFileBtn'), actionArea = document.getElementById('actionArea'), compressBtn = document.getElementById('compressBtn'), compressBtnText = document.getElementById('compressBtnText'), progressArea = document.getElementById('progressArea'), progressBar = document.getElementById('progressBar'), progressText = document.getElementById('progressText'), resultArea = document.getElementById('resultArea'), oldSizeTxt = document.getElementById('oldSizeTxt'), newSizeTxt = document.getElementById('newSizeTxt'), resetBtn = document.getElementById('resetBtn');
 
         dropZone.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('active'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('active'));
-        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('active'); if (e.dataTransfer.files.length > 0) handleFileSelect(e.dataTransfer.files[0]); });
-        fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFileSelect(e.target.files[0]); });
-        removeFileBtn.addEventListener('click', resetUI); resetBtn.addEventListener('click', resetUI);
+        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('active'); if (e.dataTransfer.files.length > 0) handleFilesSelect(e.dataTransfer.files); });
+        
+        fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFilesSelect(e.target.files); });
+        addMoreFilesBtn.addEventListener('click', () => fileInput.click());
+        removeFileBtn.addEventListener('click', resetUI); 
+        resetBtn.addEventListener('click', resetUI);
 
-        function handleFileSelect(file) {
-            if (file.type !== 'application/pdf') { alert('กรุณาเลือกไฟล์ PDF เท่านั้นครับ'); return; }
-            currentFile = file; fileName.textContent = file.name; fileSize.textContent = formatBytes(file.size);
-            dropZone.classList.add('hidden'); fileInfo.classList.remove('hidden'); actionArea.classList.remove('hidden'); resultArea.classList.add('hidden');
+        function handleFilesSelect(files) {
+            let validFilesAdded = false;
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].type === 'application/pdf') {
+                    currentFiles.push(files[i]);
+                    validFilesAdded = true;
+                }
+            }
+            
+            if (!validFilesAdded && currentFiles.length === 0) {
+                alert('กรุณาเลือกไฟล์ PDF เท่านั้นครับ'); return;
+            }
+
+            renderFileListUI();
+            
+            dropZone.classList.add('hidden'); 
+            fileInfo.classList.remove('hidden'); 
+            actionArea.classList.remove('hidden'); 
+            resultArea.classList.add('hidden');
+        }
+
+        function renderFileListUI() {
+            fileListUI.innerHTML = '';
+            let totalBytes = 0;
+            currentFiles.forEach((f, idx) => {
+                totalBytes += f.size;
+                fileListUI.innerHTML += `
+                    <li class="flex justify-between items-center bg-white px-3 py-2 rounded-lg border border-brand-100 shadow-sm">
+                        <span class="truncate pr-2 font-medium"><i data-lucide="file-text" class="w-4 h-4 inline text-brand-400 mr-2"></i>${f.name}</span> 
+                        <span class="text-xs text-gray-500 shrink-0">${formatBytes(f.size)}</span>
+                    </li>`;
+            });
+            totalSizeTxt.textContent = `ขนาดรวมก่อนประมวลผล: ${formatBytes(totalBytes)} | ${currentFiles.length} ไฟล์`;
+            compressBtnText.textContent = currentFiles.length > 1 ? `เริ่มรวม ${currentFiles.length} ไฟล์ & ประมวลผล` : `เริ่มประมวลผลไฟล์`;
+            lucide.createIcons();
         }
 
         function resetUI() {
-            currentFile = null; compressedBlob = null; compressedImages = []; unscaledFormats = []; hasUnsavedSignatures = false; fileInput.value = '';
+            currentFiles = []; compressedImages = []; unscaledFormats = []; hasUnsavedSignatures = false; fileInput.value = '';
             dropZone.classList.remove('hidden'); fileInfo.classList.add('hidden'); actionArea.classList.add('hidden'); progressArea.classList.add('hidden'); resultArea.classList.add('hidden'); progressBar.style.width = '0%'; progressText.textContent = '';
         }
 
         // ---------------------------------------------------------
-        // 3. Compress / Read PDF
+        // 3. Compress & Merge PDF Logic
         // ---------------------------------------------------------
         compressBtn.addEventListener('click', async () => {
-            if (!currentFile) return;
+            if (currentFiles.length === 0) return;
             const settings = QUALITY_SETTINGS[document.querySelector('input[name="quality"]:checked').value];
             actionArea.classList.add('hidden'); fileInfo.classList.add('hidden'); progressArea.classList.remove('hidden');
 
             try {
-                const arrayBuffer = await currentFile.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                const numPages = pdf.numPages;
-                
                 compressedImages = [];
                 unscaledFormats = [];
+                
+                // คำนวณขนาดรวมทั้งหมด
+                const originalTotalSize = currentFiles.reduce((acc, file) => acc + file.size, 0);
 
-                for (let i = 1; i <= numPages; i++) {
-                    progressBar.style.width = `${Math.round((i / numPages) * 100)}%`;
-                    progressText.textContent = `กำลังประมวลผลหน้า ${i} จาก ${numPages}...`;
+                for (let fileIdx = 0; fileIdx < currentFiles.length; fileIdx++) {
+                    const file = currentFiles[fileIdx];
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    const numPages = pdf.numPages;
 
-                    const page = await pdf.getPage(i);
-                    const unscaledViewport = page.getViewport({ scale: 1.0 });
-                    const renderViewport = page.getViewport({ scale: settings.scale });
+                    for (let i = 1; i <= numPages; i++) {
+                        // คำนวณ Progress คร่าวๆ โดยอิงจากไฟล์
+                        const progress = Math.round(((fileIdx + (i / numPages)) / currentFiles.length) * 100);
+                        progressBar.style.width = `${progress}%`;
+                        progressText.textContent = `กำลังโหลดไฟล์ ${fileIdx + 1}/${currentFiles.length} (หน้า ${i}/${numPages})...`;
 
-                    // Save original format for rebuilding PDF later
-                    unscaledFormats.push({
-                        w: unscaledViewport.width, h: unscaledViewport.height, 
-                        orientation: unscaledViewport.width > unscaledViewport.height ? 'l' : 'p'
-                    });
+                        const page = await pdf.getPage(i);
+                        const unscaledViewport = page.getViewport({ scale: 1.0 });
+                        const renderViewport = page.getViewport({ scale: settings.scale });
 
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    canvas.width = renderViewport.width; canvas.height = renderViewport.height;
+                        unscaledFormats.push({ w: unscaledViewport.width, h: unscaledViewport.height, orientation: unscaledViewport.width > unscaledViewport.height ? 'l' : 'p' });
 
-                    await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
-                    compressedImages.push(canvas.toDataURL('image/jpeg', settings.jpegQuality));
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = renderViewport.width; canvas.height = renderViewport.height;
+
+                        await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
+                        compressedImages.push(canvas.toDataURL('image/jpeg', settings.jpegQuality));
+                    }
                 }
 
-                await rebuildPdfBlob(); // Build initial PDF
-                showResult(currentFile.size, compressedBlob.size);
+                // สุ่มคำนวณขนาดใหม่ (เพราะเราไม่ได้ต่อ Blob ไว้รอโหลดแล้ว เพื่อประหยัด Memory)
+                // จะไปสร้าง PDF จริงๆ ตอนผู้ใช้กดยืนยันดาวน์โหลดผ่าน Modal
+                const estimatedNewSize = compressedImages.reduce((acc, img) => acc + (img.length * 0.75), 0);
+                showResult(originalTotalSize, estimatedNewSize);
+
             } catch (error) {
-                console.error(error); alert("เกิดข้อผิดพลาดในการประมวลผลไฟล์"); resetUI();
+                console.error(error); alert("เกิดข้อผิดพลาดในการประมวลผล หรือไฟล์บางไฟล์อาจเสียหายครับ"); resetUI();
             }
         });
-
-        // Helper: Create PDF from images array
-        async function rebuildPdfBlob() {
-            progressText.textContent = "กำลังสร้างไฟล์ PDF...";
-            const { jsPDF } = window.jspdf;
-            let newPdf = null;
-            
-            for (let i = 0; i < compressedImages.length; i++) {
-                const fmt = unscaledFormats[i];
-                if (i === 0) {
-                    newPdf = new jsPDF({ orientation: fmt.orientation, unit: 'pt', format: [fmt.w, fmt.h] });
-                } else {
-                    newPdf.addPage([fmt.w, fmt.h], fmt.orientation);
-                }
-                newPdf.addImage(compressedImages[i], 'JPEG', 0, 0, fmt.w, fmt.h);
-            }
-            compressedBlob = newPdf.output('blob');
-            
-            // Update UI size if result area is visible
-            if(!progressArea.classList.contains('hidden') || hasUnsavedSignatures) {
-                document.getElementById('newSizeTxt').textContent = formatBytes(compressedBlob.size);
-            }
-            hasUnsavedSignatures = false;
-        }
 
         function showResult(originalSize, newSize) {
             progressArea.classList.add('hidden'); resultArea.classList.remove('hidden');
-            oldSizeTxt.textContent = formatBytes(originalSize); newSizeTxt.textContent = formatBytes(newSize);
+            oldSizeTxt.textContent = formatBytes(originalSize); newSizeTxt.textContent = "~ " + formatBytes(newSize);
         }
 
-        // Buttons
-        document.getElementById('downloadBtn').addEventListener('click', () => {
-            if (!compressedBlob) return;
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(compressedBlob); a.download = currentFile.name.replace(/\.[^/.]+$/, "") + "_compressed.pdf";
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
-        });
-
         // ---------------------------------------------------------
-        // 4. SIGNATURE SYSTEM
+        // 4. SIGNATURE SYSTEM (No changes needed, uses compressedImages perfectly)
         // ---------------------------------------------------------
         const signModal = document.getElementById('signModal');
         const openSignBtn = document.getElementById('openSignBtn');
         const closeSignModalBtn = document.getElementById('closeSignModalBtn');
         const finishSignBtn = document.getElementById('finishSignBtn');
         
-        // Prev/Next Nav
         let sigPageIdx = 0;
         const sigPrevPageBtn = document.getElementById('sigPrevPageBtn');
         const sigNextPageBtn = document.getElementById('sigNextPageBtn');
@@ -538,7 +507,6 @@
         const pdfPageImage = document.getElementById('pdfPageImage');
         const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
 
-        // Signature Pad & Upload
         const sigCanvas = document.getElementById('sigPadCanvas');
         const sigCtx = sigCanvas.getContext('2d');
         const clearSigBtn = document.getElementById('clearSigBtn');
@@ -546,7 +514,6 @@
         const uploadSigInput = document.getElementById('uploadSigInput');
         const uploadSigBtn = document.getElementById('uploadSigBtn');
         
-        // Draggable Overlay
         const sigOverlay = document.getElementById('sigOverlay');
         const sigOverlayImg = document.getElementById('sigOverlayImg');
         const removeSigBtn = document.getElementById('removeSigBtn');
@@ -554,227 +521,112 @@
         const sigSizeSlider = document.getElementById('sigSizeSlider');
         const applySigBtn = document.getElementById('applySigBtn');
 
-        // --- Signature Pad Drawing Logic ---
         let isDrawing = false;
-        
         function getPointerPos(e) {
             const rect = sigCanvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             return { x: clientX - rect.left, y: clientY - rect.top };
         }
-
-        function startDraw(e) {
-            e.preventDefault(); isDrawing = true; const pos = getPointerPos(e);
-            sigCtx.beginPath(); sigCtx.moveTo(pos.x, pos.y); sigCtx.lineCap = 'round'; sigCtx.lineJoin = 'round';
-            sigCtx.lineWidth = 3; sigCtx.strokeStyle = '#000000';
-        }
-
-        function draw(e) {
-            if (!isDrawing) return; e.preventDefault(); const pos = getPointerPos(e);
-            sigCtx.lineTo(pos.x, pos.y); sigCtx.stroke();
-        }
-
+        function startDraw(e) { e.preventDefault(); isDrawing = true; const pos = getPointerPos(e); sigCtx.beginPath(); sigCtx.moveTo(pos.x, pos.y); sigCtx.lineCap = 'round'; sigCtx.lineJoin = 'round'; sigCtx.lineWidth = 3; sigCtx.strokeStyle = '#000000'; }
+        function draw(e) { if (!isDrawing) return; e.preventDefault(); const pos = getPointerPos(e); sigCtx.lineTo(pos.x, pos.y); sigCtx.stroke(); }
         function endDraw(e) { e.preventDefault(); isDrawing = false; }
-
         sigCanvas.addEventListener('mousedown', startDraw); sigCanvas.addEventListener('mousemove', draw); sigCanvas.addEventListener('mouseup', endDraw); sigCanvas.addEventListener('mouseout', endDraw);
         sigCanvas.addEventListener('touchstart', startDraw, {passive: false}); sigCanvas.addEventListener('touchmove', draw, {passive: false}); sigCanvas.addEventListener('touchend', endDraw);
-
         clearSigBtn.addEventListener('click', () => { sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); });
 
-        // --- Modal Navigation ---
         function updateSignPreview() {
             pdfPageImage.src = compressedImages[sigPageIdx];
             sigPageIndicator.textContent = `หน้า ${sigPageIdx + 1} / ${compressedImages.length}`;
-            sigPrevPageBtn.disabled = sigPageIdx === 0;
-            sigNextPageBtn.disabled = sigPageIdx === compressedImages.length - 1;
-            sigPrevPageBtn.style.opacity = sigPrevPageBtn.disabled ? '0.3' : '1';
-            sigNextPageBtn.style.opacity = sigNextPageBtn.disabled ? '0.3' : '1';
-            
-            // Hide overlay when changing page
+            sigPrevPageBtn.disabled = sigPageIdx === 0; sigNextPageBtn.disabled = sigPageIdx === compressedImages.length - 1;
+            sigPrevPageBtn.style.opacity = sigPrevPageBtn.disabled ? '0.3' : '1'; sigNextPageBtn.style.opacity = sigNextPageBtn.disabled ? '0.3' : '1';
             hideSignatureOverlay();
         }
 
-        openSignBtn.addEventListener('click', () => {
-            sigPageIdx = 0; updateSignPreview(); signModal.classList.remove('hidden');
-        });
-
-        closeSignModalBtn.addEventListener('click', closeModalAndCheckRebuild);
-        finishSignBtn.addEventListener('click', closeModalAndCheckRebuild);
-
-        async function closeModalAndCheckRebuild() {
-            signModal.classList.add('hidden');
-            hideSignatureOverlay();
-            if (hasUnsavedSignatures) {
-                // Re-build PDF blob because images array was modified
-                const origHtml = finishSignBtn.innerHTML;
-                progressArea.classList.remove('hidden'); resultArea.classList.add('hidden');
-                await rebuildPdfBlob();
-                progressArea.classList.add('hidden'); resultArea.classList.remove('hidden');
-            }
-        }
-
+        openSignBtn.addEventListener('click', () => { sigPageIdx = 0; updateSignPreview(); signModal.classList.remove('hidden'); });
+        closeSignModalBtn.addEventListener('click', () => { signModal.classList.add('hidden'); hideSignatureOverlay(); });
+        finishSignBtn.addEventListener('click', () => { signModal.classList.add('hidden'); hideSignatureOverlay(); });
         sigPrevPageBtn.addEventListener('click', () => { if(sigPageIdx > 0) { sigPageIdx--; updateSignPreview(); } });
         sigNextPageBtn.addEventListener('click', () => { if(sigPageIdx < compressedImages.length - 1) { sigPageIdx++; updateSignPreview(); } });
 
-        // --- Placing & Dragging Signature ---
-        function isCanvasBlank(canvas) {
-            const blank = document.createElement('canvas'); blank.width = canvas.width; blank.height = canvas.height;
-            return canvas.toDataURL() === blank.toDataURL();
-        }
-
-        function hideSignatureOverlay() {
-            sigOverlay.classList.add('hidden'); sigControls.classList.add('hidden'); 
-            placeSigBtn.disabled = false;
-            uploadSigBtn.disabled = false;
-        }
-
-        // ฟังก์ชันช่วยวางลายเซ็น (ใช้ได้ทั้งวาดเองและอัปโหลด)
+        function isCanvasBlank(canvas) { const blank = document.createElement('canvas'); blank.width = canvas.width; blank.height = canvas.height; return canvas.toDataURL() === blank.toDataURL(); }
+        function hideSignatureOverlay() { sigOverlay.classList.add('hidden'); sigControls.classList.add('hidden'); placeSigBtn.disabled = false; uploadSigBtn.disabled = false; }
         function placeSignatureImage(srcUrl) {
-            sigOverlayImg.src = srcUrl;
-            
-            // Reset position & size
-            sigOverlay.style.left = '50%'; sigOverlay.style.top = '50%';
-            sigSizeSlider.value = 150; sigOverlayImg.style.width = '150px';
-            
-            sigOverlay.classList.remove('hidden'); sigControls.classList.remove('hidden');
-            placeSigBtn.disabled = true; // Prevent multiple until applied/removed
-            uploadSigBtn.disabled = true;
+            sigOverlayImg.src = srcUrl; sigOverlay.style.left = '50%'; sigOverlay.style.top = '50%'; sigSizeSlider.value = 150; sigOverlayImg.style.width = '150px';
+            sigOverlay.classList.remove('hidden'); sigControls.classList.remove('hidden'); placeSigBtn.disabled = true; uploadSigBtn.disabled = true;
         }
 
-        // วางลายเซ็นจากการวาด
-        placeSigBtn.addEventListener('click', () => {
-            if (isCanvasBlank(sigCanvas)) { alert("กรุณาวาดลายเซ็นก่อนครับ"); return; }
-            placeSignatureImage(sigCanvas.toDataURL("image/png"));
-        });
-
-        // อัปโหลดไฟล์ลายเซ็น
+        placeSigBtn.addEventListener('click', () => { if (isCanvasBlank(sigCanvas)) { alert("กรุณาวาดลายเซ็นก่อนครับ"); return; } placeSignatureImage(sigCanvas.toDataURL("image/png")); });
         uploadSigBtn.addEventListener('click', () => uploadSigInput.click());
-
-        uploadSigInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                placeSignatureImage(event.target.result);
-                uploadSigInput.value = ''; // Reset input ให้สามารถอัปโหลดรูปเดิมซ้ำได้
-            };
-            reader.readAsDataURL(file);
-        });
-
+        uploadSigInput.addEventListener('change', (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (event) => { placeSignatureImage(event.target.result); uploadSigInput.value = ''; }; reader.readAsDataURL(file); });
         removeSigBtn.addEventListener('click', hideSignatureOverlay);
+        sigSizeSlider.addEventListener('input', (e) => { sigOverlayImg.style.width = e.target.value + 'px'; });
 
-        sigSizeSlider.addEventListener('input', (e) => {
-            sigOverlayImg.style.width = e.target.value + 'px';
-        });
-
-        // Drag Logic
         let dragActive = false, startX, startY, initialLeft, initialTop;
-        
-        function dragStart(e) {
-            if(e.target === removeSigBtn || e.target.closest('#removeSigBtn')) return;
-            e.preventDefault(); dragActive = true;
-            startX = e.touches ? e.touches[0].clientX : e.clientX;
-            startY = e.touches ? e.touches[0].clientY : e.clientY;
-            initialLeft = sigOverlay.offsetLeft; initialTop = sigOverlay.offsetTop;
-        }
-
-        function dragMove(e) {
-            if (!dragActive) return; e.preventDefault();
-            const currentX = e.touches ? e.touches[0].clientX : e.clientX;
-            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            // Calculate new positions (centered based)
-            let newLeft = initialLeft + (currentX - startX);
-            let newTop = initialTop + (currentY - startY);
-            
-            // Constrain to image bounds rather than container bounds for accuracy
-            const imgRect = pdfPageImage.getBoundingClientRect();
-            newLeft = Math.max(0, Math.min(newLeft, imgRect.width));
-            newTop = Math.max(0, Math.min(newTop, imgRect.height));
-
-            sigOverlay.style.left = newLeft + 'px';
-            sigOverlay.style.top = newTop + 'px';
-        }
-
+        function dragStart(e) { if(e.target === removeSigBtn || e.target.closest('#removeSigBtn')) return; e.preventDefault(); dragActive = true; startX = e.touches ? e.touches[0].clientX : e.clientX; startY = e.touches ? e.touches[0].clientY : e.clientY; initialLeft = sigOverlay.offsetLeft; initialTop = sigOverlay.offsetTop; }
+        function dragMove(e) { if (!dragActive) return; e.preventDefault(); const currentX = e.touches ? e.touches[0].clientX : e.clientX; const currentY = e.touches ? e.touches[0].clientY : e.clientY; let newLeft = initialLeft + (currentX - startX); let newTop = initialTop + (currentY - startY); const imgRect = pdfPageImage.getBoundingClientRect(); newLeft = Math.max(0, Math.min(newLeft, imgRect.width)); newTop = Math.max(0, Math.min(newTop, imgRect.height)); sigOverlay.style.left = newLeft + 'px'; sigOverlay.style.top = newTop + 'px'; }
         function dragEnd() { dragActive = false; }
+        sigOverlay.addEventListener('mousedown', dragStart); window.addEventListener('mousemove', dragMove); window.addEventListener('mouseup', dragEnd); sigOverlay.addEventListener('touchstart', dragStart, {passive: false}); window.addEventListener('touchmove', dragMove, {passive: false}); window.addEventListener('touchend', dragEnd);
 
-        sigOverlay.addEventListener('mousedown', dragStart); window.addEventListener('mousemove', dragMove); window.addEventListener('mouseup', dragEnd);
-        sigOverlay.addEventListener('touchstart', dragStart, {passive: false}); window.addEventListener('touchmove', dragMove, {passive: false}); window.addEventListener('touchend', dragEnd);
-
-        // --- Apply (Merge) Signature to Page ---
         applySigBtn.addEventListener('click', () => {
-            // ดึงพิกัดก่อนที่จะมีการกดปุ่มหรือ re-render เพื่อความแม่นยำที่สุด (ป้องกัน UI ขยับ)
-            const imgRect = pdfPageImage.getBoundingClientRect();
-            const sigImgRect = sigOverlayImg.getBoundingClientRect();
-
-            const originalText = applySigBtn.innerHTML;
-            applySigBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> กำลังประทับตรา...';
-            applySigBtn.disabled = true;
-
-            setTimeout(() => { // allow UI to update
+            const imgRect = pdfPageImage.getBoundingClientRect(); const sigImgRect = sigOverlayImg.getBoundingClientRect();
+            const originalText = applySigBtn.innerHTML; applySigBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> กำลังประทับตรา...'; applySigBtn.disabled = true;
+            setTimeout(() => {
                 const bgImg = new Image();
                 bgImg.onload = () => {
-                    // Create an off-screen canvas at the exact intrinsic resolution of the PDF Page image
-                    const c = document.createElement('canvas');
-                    c.width = bgImg.width; c.height = bgImg.height;
-                    const ctx = c.getContext('2d');
-                    
-                    // 1. Draw PDF Page Background
+                    const c = document.createElement('canvas'); c.width = bgImg.width; c.height = bgImg.height; const ctx = c.getContext('2d');
                     ctx.drawImage(bgImg, 0, 0);
-
-                    // 2. Calculate Scale Ratio (Intrinsic size vs Displayed size of the image itself)
-                    const scaleX = bgImg.width / imgRect.width;
-                    const scaleY = bgImg.height / imgRect.height;
-
-                    // 3. Calculate exact pixel position on intrinsic image
-                    const x = (sigImgRect.left - imgRect.left) * scaleX;
-                    const y = (sigImgRect.top - imgRect.top) * scaleY;
-                    const w = sigImgRect.width * scaleX;
-                    const h = sigImgRect.height * scaleY;
-
-                    // 4. Draw Signature Overlay
+                    const scaleX = bgImg.width / imgRect.width; const scaleY = bgImg.height / imgRect.height;
+                    const x = (sigImgRect.left - imgRect.left) * scaleX; const y = (sigImgRect.top - imgRect.top) * scaleY; const w = sigImgRect.width * scaleX; const h = sigImgRect.height * scaleY;
                     const sImg = new Image();
                     sImg.onload = () => {
                         ctx.drawImage(sImg, x, y, w, h);
-                        
-                        // 5. Save back to our source of truth
-                        compressedImages[sigPageIdx] = c.toDataURL('image/jpeg', 0.9);
-                        hasUnsavedSignatures = true;
-                        
-                        // 6. Reset UI
-                        updateSignPreview(); // reload the new flattened image
-                        hideSignatureOverlay();
-                        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); // clear pad
-                        
-                        applySigBtn.innerHTML = originalText;
-                        applySigBtn.disabled = false;
-                        
-                        // Small success animation or alert
-                        const toast = document.createElement('div');
-                        toast.className = 'absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg text-sm z-50 animate-fade-in';
-                        toast.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i> ประทับลายเซ็นสำเร็จ!';
-                        pdfPreviewContainer.appendChild(toast);
-                        lucide.createIcons();
-                        setTimeout(() => toast.remove(), 2000);
-                    };
-                    sImg.src = sigOverlayImg.src;
-                };
-                bgImg.src = compressedImages[sigPageIdx];
+                        compressedImages[sigPageIdx] = c.toDataURL('image/jpeg', 0.9); hasUnsavedSignatures = true;
+                        updateSignPreview(); hideSignatureOverlay(); sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+                        applySigBtn.innerHTML = originalText; applySigBtn.disabled = false;
+                        const toast = document.createElement('div'); toast.className = 'absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg text-sm z-50 animate-fade-in'; toast.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 inline mr-1"></i> ประทับลายเซ็นสำเร็จ!'; pdfPreviewContainer.appendChild(toast); lucide.createIcons(); setTimeout(() => toast.remove(), 2000);
+                    }; sImg.src = sigOverlayImg.src;
+                }; bgImg.src = compressedImages[sigPageIdx];
             }, 50);
         });
 
         // ---------------------------------------------------------
-        // 5. ZIP Image Download (Modal & Logic)
+        // 5. UNIVERSAL DOWNLOAD MODAL (PDF & ZIP selection)
         // ---------------------------------------------------------
         const pageSelectModal = document.getElementById('pageSelectModal');
         const pageGrid = document.getElementById('pageGrid');
-        const downloadImgBtn = document.getElementById('downloadImgBtn');
-        const confirmZipBtn = document.getElementById('confirmZipBtn');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        const downloadZipBtn = document.getElementById('downloadZipBtn');
+        const confirmSelectionBtn = document.getElementById('confirmSelectionBtn');
+        
+        // Modal dynamic elements
+        const modalTitle = document.getElementById('modalTitle');
+        const modalIconBg = document.getElementById('modalIconBg');
+        const confirmBtnIcon = document.getElementById('confirmBtnIcon');
+        const confirmBtnText = document.getElementById('confirmBtnText');
 
-        downloadImgBtn.addEventListener('click', () => {
+        let downloadMode = ''; // 'pdf' or 'zip'
+
+        function openSelectionModal(mode) {
             if (compressedImages.length === 0) return;
+            downloadMode = mode;
+            
+            // ปรับ UI ของ Modal ให้เข้ากับโหมด
+            if (mode === 'pdf') {
+                modalTitle.textContent = "เลือกหน้าเพื่อดาวน์โหลดเป็นไฟล์ PDF";
+                modalIconBg.className = "bg-green-100 p-2 rounded-lg text-green-600";
+                document.getElementById('modalIcon').setAttribute('data-lucide', 'file-text');
+                confirmSelectionBtn.className = "px-5 py-2.5 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 flex items-center gap-2";
+                confirmBtnText.textContent = "โหลดไฟล์ PDF";
+            } else if (mode === 'zip') {
+                modalTitle.textContent = "เลือกหน้าเพื่อดาวน์โหลดรูปภาพ (ZIP)";
+                modalIconBg.className = "bg-blue-100 p-2 rounded-lg text-blue-600";
+                document.getElementById('modalIcon').setAttribute('data-lucide', 'images');
+                confirmSelectionBtn.className = "px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 flex items-center gap-2";
+                confirmBtnText.textContent = "โหลดไฟล์ ZIP";
+            }
+            
+            // สร้าง Grid หน้ากระดาษ
             pageGrid.innerHTML = '';
             compressedImages.forEach((imgData, index) => {
                 const pageNum = index + 1;
@@ -795,8 +647,13 @@
                 });
                 pageGrid.appendChild(div);
             });
+            
+            lucide.createIcons();
             pageSelectModal.classList.remove('hidden');
-        });
+        }
+
+        downloadPdfBtn.addEventListener('click', () => openSelectionModal('pdf'));
+        downloadZipBtn.addEventListener('click', () => openSelectionModal('zip'));
 
         document.getElementById('closeModalBtn').addEventListener('click', () => pageSelectModal.classList.add('hidden'));
         document.getElementById('cancelModalBtn').addEventListener('click', () => pageSelectModal.classList.add('hidden'));
@@ -808,25 +665,65 @@
             document.querySelectorAll('.page-card').forEach(card => { card.querySelector('input').checked = false; card.classList.remove('bg-brand-50', 'border-brand-500'); card.classList.add('bg-white', 'border-gray-100', 'opacity-70'); });
         });
 
-        confirmZipBtn.addEventListener('click', async () => {
+        // ---------------------------------------------------------
+        // 6. Execute PDF or ZIP creation based on selection
+        // ---------------------------------------------------------
+        confirmSelectionBtn.addEventListener('click', async () => {
             const selectedIndexes = Array.from(document.querySelectorAll('.page-checkbox:checked')).map(cb => parseInt(cb.value));
-            if (selectedIndexes.length === 0) { alert("กรุณาเลือกอย่างน้อย 1 หน้า"); return; }
+            if (selectedIndexes.length === 0) { alert("กรุณาเลือกอย่างน้อย 1 หน้าเพื่อดำเนินการครับ"); return; }
             
-            const orig = confirmZipBtn.innerHTML; confirmZipBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>สร้าง ZIP...</span>'; confirmZipBtn.disabled = true; lucide.createIcons();
+            const orig = confirmBtnText.textContent; 
+            confirmBtnText.textContent = 'กำลังประมวลผล...'; 
+            confirmSelectionBtn.disabled = true; 
 
             try {
-                const zip = new JSZip();
-                const folderName = currentFile.name.replace(/\.[^/.]+$/, "") + "_images";
-                const imgFolder = zip.folder(folderName);
-                selectedIndexes.forEach(index => {
-                    imgFolder.file(`page_${String(index + 1).padStart(3, '0')}.jpg`, compressedImages[index].split(',')[1], {base64: true});
-                });
-                const content = await zip.generateAsync({type:"blob"});
-                const a = document.createElement('a'); a.href = URL.createObjectURL(content); a.download = `${folderName}.zip`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                // ตั้งชื่อไฟล์ตั้งต้นอิงจากไฟล์แรก
+                const baseName = currentFiles.length > 0 ? currentFiles[0].name.replace(/\.[^/.]+$/, "") : "Document";
+
+                if (downloadMode === 'zip') {
+                    // --- โหมดสร้างไฟล์ ZIP ---
+                    const zip = new JSZip();
+                    const folderName = baseName + (currentFiles.length > 1 ? "_Merged_Images" : "_Images");
+                    const imgFolder = zip.folder(folderName);
+                    
+                    selectedIndexes.forEach((dataIndex, stepIdx) => {
+                        // ตั้งชื่อรูปตามลำดับที่เลือก
+                        imgFolder.file(`page_${String(stepIdx + 1).padStart(3, '0')}.jpg`, compressedImages[dataIndex].split(',')[1], {base64: true});
+                    });
+                    
+                    const content = await zip.generateAsync({type:"blob"});
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(content); a.download = `${folderName}.zip`;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    
+                } else if (downloadMode === 'pdf') {
+                    // --- โหมดสร้างไฟล์ PDF จากหน้าที่เลือก ---
+                    const { jsPDF } = window.jspdf;
+                    let newPdf = null;
+                    
+                    selectedIndexes.forEach((dataIndex, stepIdx) => {
+                        const fmt = unscaledFormats[dataIndex];
+                        if (stepIdx === 0) {
+                            newPdf = new jsPDF({ orientation: fmt.orientation, unit: 'pt', format: [fmt.w, fmt.h] });
+                        } else {
+                            newPdf.addPage([fmt.w, fmt.h], fmt.orientation);
+                        }
+                        newPdf.addImage(compressedImages[dataIndex], 'JPEG', 0, 0, fmt.w, fmt.h);
+                    });
+                    
+                    const pdfBlob = newPdf.output('blob');
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(pdfBlob); 
+                    a.download = baseName + (currentFiles.length > 1 ? "_Merged.pdf" : "_Compressed.pdf");
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                }
+
                 pageSelectModal.classList.add('hidden');
-            } catch (error) { alert("เกิดข้อผิดพลาดในการสร้าง ZIP"); } 
-            finally { confirmZipBtn.innerHTML = orig; confirmZipBtn.disabled = false; lucide.createIcons(); }
+            } catch (error) { 
+                console.error(error); alert("เกิดข้อผิดพลาดในการประมวลผลไฟล์ครับ"); 
+            } finally { 
+                confirmBtnText.textContent = orig; 
+                confirmSelectionBtn.disabled = false; 
+            }
         });
 
     </script>
