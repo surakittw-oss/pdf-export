@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Tools - THE STANDARD</title>
-    
-    <!-- Google Fonts: Prompt -->
+       <title>PDF Tools - THE STANDARD</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- ตั้งค่าสี CI และ Font ใน Tailwind -->
     <script>
         tailwind.config = {
             theme: {
@@ -30,16 +27,11 @@
         }
     </script>
 
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- PDF.js สำหรับอ่านไฟล์ PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
-    <!-- jsPDF สำหรับสร้างไฟล์ PDF ใหม่ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- JSZip สำหรับรวมไฟล์รูปภาพเป็น ZIP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- Google Identity Services (Google API) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
@@ -63,7 +55,6 @@
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col overflow-x-hidden">
 
-    <!-- ================= LOGIN PAGE ================= -->
     <div id="loginPage" class="flex-1 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100 max-w-md w-full text-center">
             <div class="w-16 h-16 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -79,9 +70,7 @@
         </div>
     </div>
 
-    <!-- ================= MAIN APP PAGE ================= -->
     <div id="appPage" class="hidden flex-1 flex flex-col">
-        <!-- Top Navbar -->
         <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
             <div class="max-w-5xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-2">
@@ -98,18 +87,45 @@
             </div>
         </nav>
 
-        <div class="max-w-4xl mx-auto pt-10 px-4 sm:px-6 lg:px-8 w-full pb-12">
-            <!-- Header -->
+        <div class="max-w-4xl mx-auto pt-10 px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-bold text-gray-900 mb-2">ระบบจัดการไฟล์ PDF (ย่อ, รวม, เซ็น)</h2>
                 <p class="text-gray-600">จัดการไฟล์เอกสารของคุณง่ายๆ ปลอดภัย (ทำงานบนเครื่องของคุณ ไม่ส่งข้อมูลออกภายนอก)</p>
             </div>
 
-            <!-- Main Card -->
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100">
-                <!-- Upload Zone -->
+            <div id="infoSection" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8 transition-all">
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
+                    <div class="bg-brand-50 p-3 rounded-full text-brand-500 mb-3">
+                        <i data-lucide="minimize-2" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-sm mb-1">ย่อขนาดไฟล์</h3>
+                    <p class="text-xs text-gray-500">ลดขนาดไฟล์ PDF ให้เล็กลง ส่งต่อง่าย เลือกคุณภาพการบีบอัดได้ตามต้องการ</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
+                    <div class="bg-blue-50 p-3 rounded-full text-blue-500 mb-3">
+                        <i data-lucide="layers" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-sm mb-1">รวมไฟล์ (Merge)</h3>
+                    <p class="text-xs text-gray-500">เลือกอัปโหลดหลายไฟล์พร้อมกัน ระบบจะรวมหน้าเอกสารให้เป็นไฟล์เดียวอัตโนมัติ</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
+                    <div class="bg-amber-50 p-3 rounded-full text-amber-500 mb-3">
+                        <i data-lucide="pen-tool" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-sm mb-1">เซ็นเอกสาร</h3>
+                    <p class="text-xs text-gray-500">วาดลายเซ็นหรืออัปโหลดรูปภาพ ลากวางและประทับลงบนเอกสารได้ทันที</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
+                    <div class="bg-green-50 p-3 rounded-full text-green-500 mb-3">
+                        <i data-lucide="image" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-sm mb-1">ดาวน์โหลดยืดหยุ่น</h3>
+                    <p class="text-xs text-gray-500">เลือกหน้าก่อนโหลดได้ จะโหลดเป็น PDF ใหม่ หรือแยกหน้าเป็นรูปภาพ (ZIP) ก็ได้</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100 mb-8">
                 <div id="dropZone" class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer hover:bg-gray-50 mb-6">
-                    <!-- อนุญาตให้เลือกหลายไฟล์ -->
                     <input type="file" id="fileInput" accept="application/pdf" multiple class="hidden">
                     <div class="flex flex-col items-center justify-center space-y-4">
                         <div class="bg-brand-100 p-4 rounded-full text-brand-500">
@@ -117,12 +133,11 @@
                         </div>
                         <div>
                             <p class="text-lg font-medium text-gray-700">คลิกเพื่อเลือกไฟล์ PDF (เลือกได้หลายไฟล์)</p>
-                            <p class="text-sm text-gray-500 mt-1">หรือลากไฟล์ทั้งหมดมาวางตรงนี้เพื่อรวมไฟล์</p>
+                            <p class="text-sm text-gray-500 mt-1">หรือลากไฟล์ทั้งหมดมาวางตรงนี้เพื่อเริ่มงาน</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- File Info (Multiple Files) -->
                 <div id="fileInfo" class="hidden bg-brand-50 border border-brand-100 rounded-lg p-4 mb-6">
                     <div class="flex justify-between items-start mb-3 border-b border-brand-200 pb-2">
                         <h4 class="font-medium text-brand-700 text-sm">ไฟล์ที่เลือกเตรียมประมวลผล:</h4>
@@ -132,12 +147,10 @@
                         </div>
                     </div>
                     <ul id="fileListUI" class="text-sm text-gray-700 space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2">
-                        <!-- รายชื่อไฟล์จะแสดงที่นี่ -->
-                    </ul>
+                        </ul>
                     <div class="mt-3 text-right text-xs text-gray-500 font-medium" id="totalSizeTxt"></div>
                 </div>
 
-                <!-- Settings & Action -->
                 <div id="actionArea" class="hidden space-y-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">เลือกระดับคุณภาพ (มีผลต่อความคมชัดและขนาดไฟล์)</label>
@@ -172,7 +185,6 @@
                     </button>
                 </div>
 
-                <!-- Processing / Progress Area -->
                 <div id="progressArea" class="hidden py-8 text-center">
                     <div class="flex justify-center mb-4"><div class="spinner"></div></div>
                     <h3 class="text-lg font-medium text-gray-800 mb-2">กำลังเตรียมเอกสาร...</h3>
@@ -182,7 +194,6 @@
                     <p id="progressText" class="text-sm text-gray-500">กำลังประมวลผล...</p>
                 </div>
 
-                <!-- Result Area -->
                 <div id="resultArea" class="hidden py-6 text-center">
                     <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i data-lucide="check-circle" class="w-8 h-8"></i>
@@ -201,7 +212,6 @@
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <button id="openSignBtn" class="bg-amber-500 hover:bg-amber-600 text-white font-medium py-2.5 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors">
                             <i data-lucide="pen-tool" class="w-5 h-5"></i>
@@ -221,10 +231,13 @@
                     </div>
                 </div>
             </div>
+
+            <footer class="mt-auto py-6 text-center text-xs text-gray-400 font-medium">
+                &copy; 2026 webmaster, digital platform management | THE STANDARD
+            </footer>
         </div>
     </div>
 
-    <!-- ================= SIGNATURE MODAL ================= -->
     <div id="signModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm p-2 sm:p-4">
         <div class="bg-white rounded-2xl w-full max-w-6xl flex flex-col h-[95vh] shadow-2xl overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
@@ -289,8 +302,6 @@
         </div>
     </div>
 
-    <!-- ================= UNIVERSAL PAGE SELECTION MODAL ================= -->
-    <!-- ใช้ Modal ร่วมกันทั้งตอนจะดาวน์โหลด PDF หรือ ZIP -->
     <div id="pageSelectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
@@ -367,7 +378,7 @@
         // ---------------------------------------------------------
         // 2. Core App State & File Logic (Multiple Files / Merge)
         // ---------------------------------------------------------
-        let currentFiles = []; // เปลี่ยนเป็นเก็บ Array ของไฟล์เพื่อทำฟีเจอร์ Merge
+        let currentFiles = []; 
         let compressedImages = []; 
         let unscaledFormats = [];  
         let hasUnsavedSignatures = false; 
@@ -381,7 +392,7 @@
         }
 
         // DOM Setup for File Upload
-        const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('fileInput'), fileInfo = document.getElementById('fileInfo'), fileListUI = document.getElementById('fileListUI'), totalSizeTxt = document.getElementById('totalSizeTxt'), addMoreFilesBtn = document.getElementById('addMoreFilesBtn'), removeFileBtn = document.getElementById('removeFileBtn'), actionArea = document.getElementById('actionArea'), compressBtn = document.getElementById('compressBtn'), compressBtnText = document.getElementById('compressBtnText'), progressArea = document.getElementById('progressArea'), progressBar = document.getElementById('progressBar'), progressText = document.getElementById('progressText'), resultArea = document.getElementById('resultArea'), oldSizeTxt = document.getElementById('oldSizeTxt'), newSizeTxt = document.getElementById('newSizeTxt'), resetBtn = document.getElementById('resetBtn');
+        const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('fileInput'), fileInfo = document.getElementById('fileInfo'), fileListUI = document.getElementById('fileListUI'), totalSizeTxt = document.getElementById('totalSizeTxt'), addMoreFilesBtn = document.getElementById('addMoreFilesBtn'), removeFileBtn = document.getElementById('removeFileBtn'), actionArea = document.getElementById('actionArea'), compressBtn = document.getElementById('compressBtn'), compressBtnText = document.getElementById('compressBtnText'), progressArea = document.getElementById('progressArea'), progressBar = document.getElementById('progressBar'), progressText = document.getElementById('progressText'), resultArea = document.getElementById('resultArea'), oldSizeTxt = document.getElementById('oldSizeTxt'), newSizeTxt = document.getElementById('newSizeTxt'), resetBtn = document.getElementById('resetBtn'), infoSection = document.getElementById('infoSection');
 
         dropZone.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('active'); });
@@ -408,6 +419,7 @@
 
             renderFileListUI();
             
+            infoSection.classList.add('hidden'); // ซ่อน Info section
             dropZone.classList.add('hidden'); 
             fileInfo.classList.remove('hidden'); 
             actionArea.classList.remove('hidden'); 
@@ -432,6 +444,7 @@
 
         function resetUI() {
             currentFiles = []; compressedImages = []; unscaledFormats = []; hasUnsavedSignatures = false; fileInput.value = '';
+            infoSection.classList.remove('hidden'); // โชว์ Info section กลับมา
             dropZone.classList.remove('hidden'); fileInfo.classList.add('hidden'); actionArea.classList.add('hidden'); progressArea.classList.add('hidden'); resultArea.classList.add('hidden'); progressBar.style.width = '0%'; progressText.textContent = '';
         }
 
@@ -447,7 +460,6 @@
                 compressedImages = [];
                 unscaledFormats = [];
                 
-                // คำนวณขนาดรวมทั้งหมด
                 const originalTotalSize = currentFiles.reduce((acc, file) => acc + file.size, 0);
 
                 for (let fileIdx = 0; fileIdx < currentFiles.length; fileIdx++) {
@@ -457,7 +469,6 @@
                     const numPages = pdf.numPages;
 
                     for (let i = 1; i <= numPages; i++) {
-                        // คำนวณ Progress คร่าวๆ โดยอิงจากไฟล์
                         const progress = Math.round(((fileIdx + (i / numPages)) / currentFiles.length) * 100);
                         progressBar.style.width = `${progress}%`;
                         progressText.textContent = `กำลังโหลดไฟล์ ${fileIdx + 1}/${currentFiles.length} (หน้า ${i}/${numPages})...`;
@@ -477,8 +488,6 @@
                     }
                 }
 
-                // สุ่มคำนวณขนาดใหม่ (เพราะเราไม่ได้ต่อ Blob ไว้รอโหลดแล้ว เพื่อประหยัด Memory)
-                // จะไปสร้าง PDF จริงๆ ตอนผู้ใช้กดยืนยันดาวน์โหลดผ่าน Modal
                 const estimatedNewSize = compressedImages.reduce((acc, img) => acc + (img.length * 0.75), 0);
                 showResult(originalTotalSize, estimatedNewSize);
 
@@ -493,7 +502,7 @@
         }
 
         // ---------------------------------------------------------
-        // 4. SIGNATURE SYSTEM (No changes needed, uses compressedImages perfectly)
+        // 4. SIGNATURE SYSTEM
         // ---------------------------------------------------------
         const signModal = document.getElementById('signModal');
         const openSignBtn = document.getElementById('openSignBtn');
@@ -599,19 +608,17 @@
         const downloadZipBtn = document.getElementById('downloadZipBtn');
         const confirmSelectionBtn = document.getElementById('confirmSelectionBtn');
         
-        // Modal dynamic elements
         const modalTitle = document.getElementById('modalTitle');
         const modalIconBg = document.getElementById('modalIconBg');
         const confirmBtnIcon = document.getElementById('confirmBtnIcon');
         const confirmBtnText = document.getElementById('confirmBtnText');
 
-        let downloadMode = ''; // 'pdf' or 'zip'
+        let downloadMode = '';
 
         function openSelectionModal(mode) {
             if (compressedImages.length === 0) return;
             downloadMode = mode;
             
-            // ปรับ UI ของ Modal ให้เข้ากับโหมด
             if (mode === 'pdf') {
                 modalTitle.textContent = "เลือกหน้าเพื่อดาวน์โหลดเป็นไฟล์ PDF";
                 modalIconBg.className = "bg-green-100 p-2 rounded-lg text-green-600";
@@ -626,7 +633,6 @@
                 confirmBtnText.textContent = "โหลดไฟล์ ZIP";
             }
             
-            // สร้าง Grid หน้ากระดาษ
             pageGrid.innerHTML = '';
             compressedImages.forEach((imgData, index) => {
                 const pageNum = index + 1;
@@ -665,9 +671,6 @@
             document.querySelectorAll('.page-card').forEach(card => { card.querySelector('input').checked = false; card.classList.remove('bg-brand-50', 'border-brand-500'); card.classList.add('bg-white', 'border-gray-100', 'opacity-70'); });
         });
 
-        // ---------------------------------------------------------
-        // 6. Execute PDF or ZIP creation based on selection
-        // ---------------------------------------------------------
         confirmSelectionBtn.addEventListener('click', async () => {
             const selectedIndexes = Array.from(document.querySelectorAll('.page-checkbox:checked')).map(cb => parseInt(cb.value));
             if (selectedIndexes.length === 0) { alert("กรุณาเลือกอย่างน้อย 1 หน้าเพื่อดำเนินการครับ"); return; }
@@ -677,17 +680,14 @@
             confirmSelectionBtn.disabled = true; 
 
             try {
-                // ตั้งชื่อไฟล์ตั้งต้นอิงจากไฟล์แรก
                 const baseName = currentFiles.length > 0 ? currentFiles[0].name.replace(/\.[^/.]+$/, "") : "Document";
 
                 if (downloadMode === 'zip') {
-                    // --- โหมดสร้างไฟล์ ZIP ---
                     const zip = new JSZip();
                     const folderName = baseName + (currentFiles.length > 1 ? "_Merged_Images" : "_Images");
                     const imgFolder = zip.folder(folderName);
                     
                     selectedIndexes.forEach((dataIndex, stepIdx) => {
-                        // ตั้งชื่อรูปตามลำดับที่เลือก
                         imgFolder.file(`page_${String(stepIdx + 1).padStart(3, '0')}.jpg`, compressedImages[dataIndex].split(',')[1], {base64: true});
                     });
                     
@@ -696,7 +696,6 @@
                     document.body.appendChild(a); a.click(); document.body.removeChild(a);
                     
                 } else if (downloadMode === 'pdf') {
-                    // --- โหมดสร้างไฟล์ PDF จากหน้าที่เลือก ---
                     const { jsPDF } = window.jspdf;
                     let newPdf = null;
                     
