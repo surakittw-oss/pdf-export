@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>PDF Tools - THE STANDARD</title>
+    <title>PDF Tools - THE STANDARD</title>
+    
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,6 +21,7 @@
     
     <script>
         tailwind.config = {
+            darkMode: 'class', // เปิดโหมด Dark Mode แบบ Class
             theme: {
                 extend: {
                     colors: {
@@ -38,32 +47,36 @@
         body { font-family: 'Prompt', sans-serif; }
         .drop-zone { transition: all 0.2s ease-in-out; }
         .drop-zone.active { border-color: #e62227; background-color: #fdf2f2; }
+        .dark .drop-zone.active { border-color: #e62227; background-color: rgba(230, 34, 39, 0.1); }
         .spinner {
             border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%;
             border-left-color: #e62227; animation: spin 1s linear infinite;
         }
+        .dark .spinner { border: 4px solid rgba(255, 255, 255, 0.1); border-left-color: #e62227; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px;}
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-track { background: #334155; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Signature Area */
         #sigPadCanvas { touch-action: none; }
         .draggable-sig { cursor: move; touch-action: none; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen text-gray-800 flex flex-col overflow-x-hidden">
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-800 dark:text-gray-100 flex flex-col overflow-x-hidden transition-colors duration-200">
 
     <div id="loginPage" class="flex-1 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100 max-w-md w-full text-center">
-            <div class="w-16 h-16 bg-brand-50 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100 dark:border-gray-700 max-w-md w-full text-center transition-colors">
+            <div class="w-16 h-16 bg-brand-50 dark:bg-brand-900/30 text-brand-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <i data-lucide="shield-check" class="w-8 h-8"></i>
             </div>
-            <h1 class="text-2xl font-bold text-gray-900 mb-2">เข้าสู่ระบบ</h1>
-            <p class="text-gray-500 mb-8 text-sm">ระบบจำกัดสิทธิ์เฉพาะผู้ใช้อีเมลองค์กร<br/><span class="font-medium text-gray-800">@thestandard.co</span> เท่านั้น</p>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">เข้าสู่ระบบ</h1>
+            <p class="text-gray-500 dark:text-gray-400 mb-8 text-sm">ระบบจำกัดสิทธิ์เฉพาะผู้ใช้อีเมลองค์กร<br/><span class="font-medium text-gray-800 dark:text-gray-200">@thestandard.co</span> เท่านั้น</p>
             <div id="googleBtnDiv" class="flex justify-center w-full min-h-[40px]"></div>
-            <div id="loginError" class="hidden mt-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm flex items-start text-left">
+            <div id="loginError" class="hidden mt-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm flex items-start text-left">
                 <i data-lucide="alert-circle" class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5"></i>
                 <span id="loginErrorText">ขออภัย คุณไม่ได้รับสิทธิ์เข้าใช้งาน</span>
             </div>
@@ -71,109 +84,114 @@
     </div>
 
     <div id="appPage" class="hidden flex-1 flex flex-col">
-        <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+        <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 shadow-sm transition-colors">
             <div class="max-w-5xl mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-2">
                     <i data-lucide="file-down" class="w-6 h-6 text-brand-500"></i>
-                    <span class="font-bold text-gray-900 text-lg hidden sm:block">PDF Tools</span>
-                    <span class="font-bold text-gray-900 text-lg sm:hidden">PDF Tools</span>
+                    <span class="font-bold text-gray-900 dark:text-white text-lg hidden sm:block">PDF Tools</span>
+                    <span class="font-bold text-gray-900 dark:text-white text-lg sm:hidden">PDF Tools</span>
                 </div>
-                <div class="flex items-center gap-4 bg-gray-50 px-4 py-1.5 rounded-full border border-gray-100">
-                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span id="userEmailDisplay" class="text-sm font-medium text-gray-700 hidden sm:block"></span>
-                    <div class="h-4 w-px bg-gray-300 mx-1"></div>
-                    <button id="logoutBtn" class="text-sm text-brand-600 hover:text-brand-800 font-medium transition-colors">ออกจากระบบ</button>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-4 bg-gray-50 dark:bg-gray-700 px-4 py-1.5 rounded-full border border-gray-100 dark:border-gray-600 transition-colors">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span id="userEmailDisplay" class="text-sm font-medium text-gray-700 dark:text-gray-200 hidden sm:block"></span>
+                        <div class="h-4 w-px bg-gray-300 dark:bg-gray-500 mx-1"></div>
+                        <button id="logoutBtn" class="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 font-medium transition-colors">ออกจากระบบ</button>
+                    </div>
+                    <button id="themeToggleBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors focus:outline-none" title="สลับโหมดมืด/สว่าง">
+                        <i id="themeToggleIcon" data-lucide="moon" class="w-5 h-5"></i>
+                    </button>
                 </div>
             </div>
         </nav>
 
         <div class="max-w-4xl mx-auto pt-10 px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
             <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-2">ระบบจัดการไฟล์ PDF (ย่อ, รวม, เซ็น)</h2>
-                <p class="text-gray-600">จัดการไฟล์เอกสารของคุณง่ายๆ ปลอดภัย (ทำงานบนเครื่องของคุณ ไม่ส่งข้อมูลออกภายนอก)</p>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">ระบบจัดการไฟล์ PDF (ย่อ, รวม, เซ็น)</h2>
+                <p class="text-gray-600 dark:text-gray-400">จัดการไฟล์เอกสารของคุณง่ายๆ ปลอดภัย (ทำงานบนเครื่องของคุณ ไม่ส่งข้อมูลออกภายนอก)</p>
             </div>
 
             <div id="infoSection" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8 transition-all">
-                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
-                    <div class="bg-brand-50 p-3 rounded-full text-brand-500 mb-3">
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all">
+                    <div class="bg-brand-50 dark:bg-brand-900/30 p-3 rounded-full text-brand-500 mb-3">
                         <i data-lucide="minimize-2" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="font-bold text-gray-800 text-sm mb-1">ย่อขนาดไฟล์</h3>
-                    <p class="text-xs text-gray-500">ลดขนาดไฟล์ PDF ให้เล็กลง ส่งต่อง่าย เลือกคุณภาพการบีบอัดได้ตามต้องการ</p>
+                    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm mb-1">ย่อขนาดไฟล์</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">ลดขนาดไฟล์ PDF ให้เล็กลง ส่งต่อง่าย เลือกคุณภาพการบีบอัดได้ตามต้องการ</p>
                 </div>
-                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
-                    <div class="bg-blue-50 p-3 rounded-full text-blue-500 mb-3">
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all">
+                    <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-full text-blue-500 mb-3">
                         <i data-lucide="layers" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="font-bold text-gray-800 text-sm mb-1">รวมไฟล์ (Merge)</h3>
-                    <p class="text-xs text-gray-500">เลือกอัปโหลดหลายไฟล์พร้อมกัน ระบบจะรวมหน้าเอกสารให้เป็นไฟล์เดียวอัตโนมัติ</p>
+                    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm mb-1">รวมไฟล์ (Merge)</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">เลือกอัปโหลดหลายไฟล์พร้อมกัน ระบบจะรวมหน้าเอกสารให้เป็นไฟล์เดียวอัตโนมัติ</p>
                 </div>
-                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
-                    <div class="bg-amber-50 p-3 rounded-full text-amber-500 mb-3">
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all">
+                    <div class="bg-amber-50 dark:bg-amber-900/30 p-3 rounded-full text-amber-500 mb-3">
                         <i data-lucide="pen-tool" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="font-bold text-gray-800 text-sm mb-1">เซ็นเอกสาร</h3>
-                    <p class="text-xs text-gray-500">วาดลายเซ็นหรืออัปโหลดรูปภาพ ลากวางและประทับลงบนเอกสารได้ทันที</p>
+                    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm mb-1">เซ็นเอกสาร</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">วาดลายเซ็นหรืออัปโหลดรูปภาพ ลากวางและประทับลงบนเอกสารได้ทันที</p>
                 </div>
-                <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-shadow">
-                    <div class="bg-green-50 p-3 rounded-full text-green-500 mb-3">
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all">
+                    <div class="bg-green-50 dark:bg-green-900/30 p-3 rounded-full text-green-500 mb-3">
                         <i data-lucide="image" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="font-bold text-gray-800 text-sm mb-1">ดาวน์โหลดยืดหยุ่น</h3>
-                    <p class="text-xs text-gray-500">เลือกหน้าก่อนโหลดได้ จะโหลดเป็น PDF ใหม่ หรือแยกหน้าเป็นรูปภาพ (ZIP) ก็ได้</p>
+                    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm mb-1">ดาวน์โหลดยืดหยุ่น</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">เลือกหน้าก่อนโหลดได้ จะโหลดเป็น PDF ใหม่ หรือแยกหน้าเป็นรูปภาพ (ZIP) ก็ได้</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100 mb-8">
-                <div id="dropZone" class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer hover:bg-gray-50 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100 dark:border-gray-700 mb-8 transition-colors">
+                <div id="dropZone" class="drop-zone border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 mb-6">
                     <input type="file" id="fileInput" accept="application/pdf" multiple class="hidden">
                     <div class="flex flex-col items-center justify-center space-y-4">
-                        <div class="bg-brand-100 p-4 rounded-full text-brand-500">
+                        <div class="bg-brand-100 dark:bg-brand-900/30 p-4 rounded-full text-brand-500">
                             <i data-lucide="file-plus-2" class="w-10 h-10"></i>
                         </div>
                         <div>
-                            <p class="text-lg font-medium text-gray-700">คลิกเพื่อเลือกไฟล์ PDF (เลือกได้หลายไฟล์)</p>
-                            <p class="text-sm text-gray-500 mt-1">หรือลากไฟล์ทั้งหมดมาวางตรงนี้เพื่อเริ่มงาน</p>
+                            <p class="text-lg font-medium text-gray-700 dark:text-gray-300">คลิกเพื่อเลือกไฟล์ PDF (เลือกได้หลายไฟล์)</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">หรือลากไฟล์ทั้งหมดมาวางตรงนี้เพื่อเริ่มงาน</p>
                         </div>
                     </div>
                 </div>
 
-                <div id="fileInfo" class="hidden bg-brand-50 border border-brand-100 rounded-lg p-4 mb-6">
-                    <div class="flex justify-between items-start mb-3 border-b border-brand-200 pb-2">
-                        <h4 class="font-medium text-brand-700 text-sm">ไฟล์ที่เลือกเตรียมประมวลผล:</h4>
+                <div id="fileInfo" class="hidden bg-brand-50 dark:bg-gray-700/50 border border-brand-100 dark:border-gray-600 rounded-lg p-4 mb-6 transition-colors">
+                    <div class="flex justify-between items-start mb-3 border-b border-brand-200 dark:border-gray-600 pb-2">
+                        <h4 class="font-medium text-brand-700 dark:text-brand-400 text-sm">ไฟล์ที่เลือกเตรียมประมวลผล:</h4>
                         <div class="flex gap-3">
-                            <button id="addMoreFilesBtn" class="text-xs text-brand-600 hover:text-brand-800 flex items-center gap-1 font-medium"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มไฟล์</button>
-                            <button id="removeFileBtn" class="text-xs text-gray-500 hover:text-red-500 flex items-center gap-1"><i data-lucide="trash-2" class="w-4 h-4"></i> ล้างทั้งหมด</button>
+                            <button id="addMoreFilesBtn" class="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 flex items-center gap-1 font-medium"><i data-lucide="plus-circle" class="w-4 h-4"></i> เพิ่มไฟล์</button>
+                            <button id="removeFileBtn" class="text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 flex items-center gap-1"><i data-lucide="trash-2" class="w-4 h-4"></i> ล้างทั้งหมด</button>
                         </div>
                     </div>
-                    <ul id="fileListUI" class="text-sm text-gray-700 space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2">
+                    <ul id="fileListUI" class="text-sm text-gray-700 dark:text-gray-300 space-y-2 max-h-32 overflow-y-auto custom-scrollbar pr-2">
                         </ul>
-                    <div class="mt-3 text-right text-xs text-gray-500 font-medium" id="totalSizeTxt"></div>
+                    <div class="mt-3 text-right text-xs text-gray-500 dark:text-gray-400 font-medium" id="totalSizeTxt"></div>
                 </div>
 
                 <div id="actionArea" class="hidden space-y-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">เลือกระดับคุณภาพ (มีผลต่อความคมชัดและขนาดไฟล์)</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">เลือกระดับคุณภาพ (มีผลต่อความคมชัดและขนาดไฟล์)</label>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <label class="cursor-pointer">
                                 <input type="radio" name="quality" value="low" class="peer sr-only">
-                                <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
-                                    <p class="font-medium text-gray-800">ย่อให้เล็กที่สุด</p>
-                                    <p class="text-xs text-gray-500 mt-1">ไฟล์เล็ก แต่อาจเบลอเล็กน้อย</p>
+                                <div class="p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-center peer-checked:border-brand-500 dark:peer-checked:border-brand-500 peer-checked:bg-brand-50 dark:peer-checked:bg-brand-900/30 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <p class="font-medium text-gray-800 dark:text-gray-200">ย่อให้เล็กที่สุด</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ไฟล์เล็ก แต่อาจเบลอเล็กน้อย</p>
                                 </div>
                             </label>
                             <label class="cursor-pointer">
                                 <input type="radio" name="quality" value="medium" class="peer sr-only" checked>
-                                <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
-                                    <p class="font-medium text-gray-800">แนะนำ (สมดุล)</p>
-                                    <p class="text-xs text-gray-500 mt-1">คุณภาพดี ขนาดเล็กลงพอสมควร</p>
+                                <div class="p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-center peer-checked:border-brand-500 dark:peer-checked:border-brand-500 peer-checked:bg-brand-50 dark:peer-checked:bg-brand-900/30 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <p class="font-medium text-gray-800 dark:text-gray-200">แนะนำ (สมดุล)</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">คุณภาพดี ขนาดเล็กลงพอสมควร</p>
                                 </div>
                             </label>
                             <label class="cursor-pointer">
                                 <input type="radio" name="quality" value="high" class="peer sr-only">
-                                <div class="p-3 border border-gray-200 rounded-lg text-center peer-checked:border-brand-500 peer-checked:bg-brand-50 hover:bg-gray-50 transition-colors">
-                                    <p class="font-medium text-gray-800">เน้นความคมชัด</p>
-                                    <p class="text-xs text-gray-500 mt-1">ชัดเจนสุด แต่ไฟล์ลดไม่มาก</p>
+                                <div class="p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-center peer-checked:border-brand-500 dark:peer-checked:border-brand-500 peer-checked:bg-brand-50 dark:peer-checked:bg-brand-900/30 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <p class="font-medium text-gray-800 dark:text-gray-200">เน้นความคมชัด</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ชัดเจนสุด แต่ไฟล์ลดไม่มาก</p>
                                 </div>
                             </label>
                         </div>
@@ -187,28 +205,28 @@
 
                 <div id="progressArea" class="hidden py-8 text-center">
                     <div class="flex justify-center mb-4"><div class="spinner"></div></div>
-                    <h3 class="text-lg font-medium text-gray-800 mb-2">กำลังเตรียมเอกสาร...</h3>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2 max-w-md mx-auto overflow-hidden">
+                    <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">กำลังเตรียมเอกสาร...</h3>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-2 max-w-md mx-auto overflow-hidden">
                         <div id="progressBar" class="bg-brand-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
-                    <p id="progressText" class="text-sm text-gray-500">กำลังประมวลผล...</p>
+                    <p id="progressText" class="text-sm text-gray-500 dark:text-gray-400">กำลังประมวลผล...</p>
                 </div>
 
                 <div id="resultArea" class="hidden py-6 text-center">
-                    <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i data-lucide="check-circle" class="w-8 h-8"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">ประมวลผลไฟล์สำเร็จ!</h3>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">ประมวลผลไฟล์สำเร็จ!</h3>
                     
                     <div class="flex justify-center items-center space-x-4 text-sm mb-6">
-                        <div class="bg-gray-100 px-4 py-2 rounded-lg">
-                            <p class="text-gray-500 text-xs">ขนาดรวมเดิม</p>
-                            <p id="oldSizeTxt" class="font-medium line-through text-gray-400"></p>
+                        <div class="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg">
+                            <p class="text-gray-500 dark:text-gray-400 text-xs">ขนาดรวมเดิม</p>
+                            <p id="oldSizeTxt" class="font-medium line-through text-gray-400 dark:text-gray-500"></p>
                         </div>
-                        <i data-lucide="arrow-right" class="w-5 h-5 text-gray-400"></i>
-                        <div class="bg-green-50 px-4 py-2 rounded-lg border border-green-200">
-                            <p class="text-green-600 text-xs font-medium">ขนาดใหม่ล่าสุด (ประมาณ)</p>
-                            <p id="newSizeTxt" class="font-bold text-green-700"></p>
+                        <i data-lucide="arrow-right" class="w-5 h-5 text-gray-400 dark:text-gray-500"></i>
+                        <div class="bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-lg border border-green-200 dark:border-green-800/50">
+                            <p class="text-green-600 dark:text-green-400 text-xs font-medium">ขนาดใหม่ล่าสุด (ประมาณ)</p>
+                            <p id="newSizeTxt" class="font-bold text-green-700 dark:text-green-300"></p>
                         </div>
                     </div>
 
@@ -225,38 +243,38 @@
                             <i data-lucide="images" class="w-5 h-5"></i>
                             <span>โหลดภาพ (ZIP)</span>
                         </button>
-                        <button id="resetBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors">
+                        <button id="resetBtn" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2.5 px-4 rounded-lg transition-colors">
                             เริ่มใหม่ทั้งหมด
                         </button>
                     </div>
                 </div>
             </div>
 
-            <footer class="mt-auto py-6 text-center text-xs text-gray-400 font-medium">
-                &copy; 2026 Webmaster, Digital Platform Management | THE STANDARD
+            <footer class="mt-auto py-6 text-center text-xs text-gray-400 dark:text-gray-500 font-medium">
+                &copy; 2026 webmaster, digital platform management | THE STANDARD
             </footer>
         </div>
     </div>
 
     <div id="signModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm p-2 sm:p-4">
-        <div class="bg-white rounded-2xl w-full max-w-6xl flex flex-col h-[95vh] shadow-2xl overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-6xl flex flex-col h-[95vh] shadow-2xl overflow-hidden transition-colors">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900 shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="bg-amber-100 p-2 rounded-lg text-amber-600"><i data-lucide="pen-tool" class="w-6 h-6"></i></div>
+                    <div class="bg-amber-100 dark:bg-amber-900/30 p-2 rounded-lg text-amber-600 dark:text-amber-400"><i data-lucide="pen-tool" class="w-6 h-6"></i></div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900">พรีวิว & เซ็นเอกสาร</h3>
-                        <p class="text-sm text-gray-500 hidden sm:block">ตรวจดูเอกสารที่รวมแล้ว วาดลายเซ็นและลากวางในตำแหน่งที่ต้องการ</p>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">พรีวิว & เซ็นเอกสาร</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">ตรวจดูเอกสารที่รวมแล้ว วาดลายเซ็นและลากวางในตำแหน่งที่ต้องการ</p>
                     </div>
                 </div>
-                <button id="closeSignModalBtn" class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-full transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <button id="closeSignModalBtn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 p-2 rounded-full transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
 
-            <div class="flex-1 flex flex-col md:flex-row overflow-hidden bg-gray-100">
-                <div class="flex-1 overflow-auto custom-scrollbar relative p-4 flex flex-col items-center border-r border-gray-200">
-                    <div class="flex items-center gap-4 bg-white px-4 py-2 rounded-full shadow-sm mb-4 sticky top-0 z-10 shrink-0">
-                        <button id="sigPrevPageBtn" class="p-1 rounded hover:bg-gray-100 text-gray-600"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-                        <span id="sigPageIndicator" class="text-sm font-medium">หน้า 1 / 1</span>
-                        <button id="sigNextPageBtn" class="p-1 rounded hover:bg-gray-100 text-gray-600"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden bg-gray-100 dark:bg-gray-900">
+                <div class="flex-1 overflow-auto custom-scrollbar relative p-4 flex flex-col items-center border-r border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center gap-4 bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm mb-4 sticky top-0 z-10 shrink-0">
+                        <button id="sigPrevPageBtn" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                        <span id="sigPageIndicator" class="text-sm font-medium dark:text-gray-200">หน้า 1 / 1</span>
+                        <button id="sigNextPageBtn" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
                     </div>
                     <div id="pdfPreviewContainer" class="relative bg-white shadow-md select-none inline-block shrink-0">
                         <img id="pdfPageImage" src="" alt="Document Preview" class="block pointer-events-none" style="max-width: 100%; max-height: 70vh; width: auto; height: auto;">
@@ -267,34 +285,34 @@
                     </div>
                 </div>
 
-                <div class="w-full md:w-80 bg-white p-6 shrink-0 overflow-y-auto flex flex-col shadow-[-4px_0_15px_rgba(0,0,0,0.05)] z-20">
-                    <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="edit-3" class="w-5 h-5 text-amber-500"></i> ลายเซ็นของคุณ</h4>
-                    <div class="border border-gray-200 rounded-xl bg-gray-50 mb-3 relative overflow-hidden">
+                <div class="w-full md:w-80 bg-white dark:bg-gray-800 p-6 shrink-0 overflow-y-auto flex flex-col shadow-[-4px_0_15px_rgba(0,0,0,0.05)] dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20">
+                    <h4 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><i data-lucide="edit-3" class="w-5 h-5 text-amber-500"></i> ลายเซ็นของคุณ</h4>
+                    <div class="border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 mb-3 relative overflow-hidden">
                         <canvas id="sigPadCanvas" width="300" height="150" class="w-full h-[150px] cursor-crosshair bg-white"></canvas>
                         <div class="absolute bottom-2 left-0 w-full flex justify-center pointer-events-none"><div class="w-3/4 border-b border-dashed border-gray-300"></div></div>
                     </div>
                     <div class="flex gap-2 mb-4">
-                        <button id="clearSigBtn" class="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg">ล้างกระดาน</button>
+                        <button id="clearSigBtn" class="flex-1 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg">ล้างกระดาน</button>
                         <button id="placeSigBtn" class="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg shadow-sm">ใช้อันที่วาด</button>
                     </div>
                     <div class="relative flex items-center py-2 mb-4">
-                        <div class="flex-grow border-t border-gray-200"></div><span class="flex-shrink-0 mx-4 text-gray-400 text-xs font-medium">หรือ</span><div class="flex-grow border-t border-gray-200"></div>
+                        <div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div><span class="flex-shrink-0 mx-4 text-gray-400 dark:text-gray-500 text-xs font-medium">หรือ</span><div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
                     </div>
                     <div class="mb-6">
                         <input type="file" id="uploadSigInput" accept="image/png, image/jpeg" class="hidden">
-                        <button id="uploadSigBtn" class="w-full py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg shadow-sm flex items-center justify-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i> อัปโหลดไฟล์ลายเซ็น</button>
+                        <button id="uploadSigBtn" class="w-full py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg shadow-sm flex items-center justify-center gap-2"><i data-lucide="upload" class="w-4 h-4"></i> อัปโหลดไฟล์ลายเซ็น</button>
                     </div>
 
-                    <div id="sigControls" class="hidden p-4 bg-blue-50 border border-blue-100 rounded-xl mb-6 space-y-4">
-                        <p class="text-xs font-medium text-blue-800"><i data-lucide="info" class="w-3 h-3 inline"></i> ลากที่กรอบเพื่อเลื่อนตำแหน่ง</p>
+                    <div id="sigControls" class="hidden p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl mb-6 space-y-4">
+                        <p class="text-xs font-medium text-blue-800 dark:text-blue-300"><i data-lucide="info" class="w-3 h-3 inline"></i> ลากที่กรอบเพื่อเลื่อนตำแหน่ง</p>
                         <div>
-                            <label class="text-xs font-medium text-gray-700 mb-1 block">ปรับขนาดลายเซ็น:</label>
-                            <input type="range" id="sigSizeSlider" min="50" max="400" value="150" class="w-full h-1.5 bg-blue-200 rounded-lg appearance-none cursor-pointer">
+                            <label class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">ปรับขนาดลายเซ็น:</label>
+                            <input type="range" id="sigSizeSlider" min="50" max="400" value="150" class="w-full h-1.5 bg-blue-200 dark:bg-blue-700 rounded-lg appearance-none cursor-pointer">
                         </div>
                         <button id="applySigBtn" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm flex items-center justify-center gap-2"><i data-lucide="stamp" class="w-4 h-4"></i> ประทับลายเซ็นลงหน้าปัจจุบัน</button>
                     </div>
 
-                    <div class="mt-auto pt-6 border-t border-gray-100">
+                    <div class="mt-auto pt-6 border-t border-gray-100 dark:border-gray-700">
                         <button id="finishSignBtn" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md">เสร็จสิ้นการแก้พรีวิว</button>
                     </div>
                 </div>
@@ -302,32 +320,32 @@
         </div>
     </div>
 
-    <div id="pageSelectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+    <div id="pageSelectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
+            <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900 shrink-0">
                 <div class="flex items-center gap-3">
-                    <div id="modalIconBg" class="bg-brand-100 p-2 rounded-lg text-brand-500"><i id="modalIcon" data-lucide="layers" class="w-6 h-6"></i></div>
+                    <div id="modalIconBg" class="bg-brand-100 dark:bg-brand-900/30 p-2 rounded-lg text-brand-500"><i id="modalIcon" data-lucide="layers" class="w-6 h-6"></i></div>
                     <div>
-                        <h3 id="modalTitle" class="text-xl font-bold text-gray-900">เลือกหน้าเอกสาร</h3>
-                        <p class="text-sm text-gray-500 mt-1">คลิกที่รูปเพื่อเลือกหน้าที่จะรวมเป็นไฟล์สำหรับดาวน์โหลด</p>
+                        <h3 id="modalTitle" class="text-xl font-bold text-gray-900 dark:text-white">เลือกหน้าเอกสาร</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">คลิกที่รูปเพื่อเลือกหน้าที่จะรวมเป็นไฟล์สำหรับดาวน์โหลด</p>
                     </div>
                 </div>
-                <button id="closeModalBtn" class="text-gray-400 hover:bg-gray-200 p-2 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <button id="closeModalBtn" class="text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 p-2 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
             <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
                 <div class="flex justify-between items-center mb-4">
-                    <span class="text-sm font-medium text-gray-700">รายการหน้าทั้งหมดในระบบ:</span>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">รายการหน้าทั้งหมดในระบบ:</span>
                     <div class="space-x-2 flex items-center">
-                        <button id="selectAllBtn" class="text-sm text-brand-600 hover:text-brand-800 font-medium px-3 py-1 rounded hover:bg-brand-50">เลือกทั้งหมด</button>
-                        <span class="text-gray-300">|</span>
-                        <button id="deselectAllBtn" class="text-sm text-gray-500 hover:text-gray-700 font-medium px-3 py-1 rounded hover:bg-gray-100">เอาออกทั้งหมด</button>
+                        <button id="selectAllBtn" class="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-800 dark:hover:text-brand-300 font-medium px-3 py-1 rounded hover:bg-brand-50 dark:hover:bg-brand-900/30">เลือกทั้งหมด</button>
+                        <span class="text-gray-300 dark:text-gray-600">|</span>
+                        <button id="deselectAllBtn" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium px-3 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">เอาออกทั้งหมด</button>
                     </div>
                 </div>
                 <div id="pageGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
             </div>
-            <div class="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 shrink-0">
-                <button id="cancelModalBtn" class="px-5 py-2.5 rounded-lg text-gray-700 font-medium hover:bg-gray-200">ยกเลิก</button>
-                <button id="confirmSelectionBtn" class="px-5 py-2.5 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 flex items-center gap-2">
+            <div class="p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900 shrink-0">
+                <button id="cancelModalBtn" class="px-5 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700">ยกเลิก</button>
+                <button id="confirmSelectionBtn" class="px-5 py-2.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-medium flex items-center gap-2">
                     <i id="confirmBtnIcon" data-lucide="download" class="w-5 h-5"></i> <span id="confirmBtnText">ดำเนินการต่อ</span>
                 </button>
             </div>
@@ -335,7 +353,36 @@
     </div>
 
     <script>
-        lucide.createIcons();
+        // ---------------------------------------------------------
+        // 0. Theme Toggle Logic
+        // ---------------------------------------------------------
+        lucide.createIcons(); // Initialize icons first
+
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeToggleIcon = document.getElementById('themeToggleIcon');
+
+        function updateThemeIcon() {
+            if (document.documentElement.classList.contains('dark')) {
+                themeToggleIcon.setAttribute('data-lucide', 'sun');
+            } else {
+                themeToggleIcon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+        }
+
+        // Set initial icon
+        updateThemeIcon();
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.theme = 'dark';
+            } else {
+                localStorage.theme = 'light';
+            }
+            updateThemeIcon();
+        });
+
 
         // ---------------------------------------------------------
         // 1. Google Authentication
@@ -432,9 +479,9 @@
             currentFiles.forEach((f, idx) => {
                 totalBytes += f.size;
                 fileListUI.innerHTML += `
-                    <li class="flex justify-between items-center bg-white px-3 py-2 rounded-lg border border-brand-100 shadow-sm">
-                        <span class="truncate pr-2 font-medium"><i data-lucide="file-text" class="w-4 h-4 inline text-brand-400 mr-2"></i>${f.name}</span> 
-                        <span class="text-xs text-gray-500 shrink-0">${formatBytes(f.size)}</span>
+                    <li class="flex justify-between items-center bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-brand-100 dark:border-gray-600 shadow-sm">
+                        <span class="truncate pr-2 font-medium text-gray-800 dark:text-gray-200"><i data-lucide="file-text" class="w-4 h-4 inline text-brand-400 mr-2"></i>${f.name}</span> 
+                        <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">${formatBytes(f.size)}</span>
                     </li>`;
             });
             totalSizeTxt.textContent = `ขนาดรวมก่อนประมวลผล: ${formatBytes(totalBytes)} | ${currentFiles.length} ไฟล์`;
@@ -621,13 +668,13 @@
             
             if (mode === 'pdf') {
                 modalTitle.textContent = "เลือกหน้าเพื่อดาวน์โหลดเป็นไฟล์ PDF";
-                modalIconBg.className = "bg-green-100 p-2 rounded-lg text-green-600";
+                modalIconBg.className = "bg-green-100 dark:bg-green-900/30 p-2 rounded-lg text-green-600 dark:text-green-400";
                 document.getElementById('modalIcon').setAttribute('data-lucide', 'file-text');
                 confirmSelectionBtn.className = "px-5 py-2.5 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 flex items-center gap-2";
                 confirmBtnText.textContent = "โหลดไฟล์ PDF";
             } else if (mode === 'zip') {
                 modalTitle.textContent = "เลือกหน้าเพื่อดาวน์โหลดรูปภาพ (ZIP)";
-                modalIconBg.className = "bg-blue-100 p-2 rounded-lg text-blue-600";
+                modalIconBg.className = "bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg text-blue-600 dark:text-blue-400";
                 document.getElementById('modalIcon').setAttribute('data-lucide', 'images');
                 confirmSelectionBtn.className = "px-5 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 flex items-center gap-2";
                 confirmBtnText.textContent = "โหลดไฟล์ ZIP";
@@ -637,19 +684,19 @@
             compressedImages.forEach((imgData, index) => {
                 const pageNum = index + 1;
                 const div = document.createElement('div');
-                div.className = 'page-card relative flex flex-col p-2 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md bg-brand-50 border-brand-500';
+                div.className = 'page-card relative flex flex-col p-2 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md bg-brand-50 dark:bg-brand-900/20 border-brand-500 dark:border-brand-500';
                 div.innerHTML = `
-                    <div class="relative w-full aspect-[1/1.4] bg-gray-100 rounded-lg overflow-hidden border border-gray-200 mb-3 pointer-events-none">
+                    <div class="relative w-full aspect-[1/1.4] bg-white rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 mb-3 pointer-events-none">
                         <img src="${imgData}" class="w-full h-full object-contain pointer-events-none">
                     </div>
                     <div class="flex items-center justify-center gap-2 pointer-events-none">
-                        <input type="checkbox" value="${index}" class="page-checkbox w-5 h-5 text-brand-600 rounded border-gray-300 focus:ring-brand-500 pointer-events-none" checked>
-                        <label class="text-sm font-medium text-gray-800 select-none pointer-events-none">หน้า ${pageNum}</label>
+                        <input type="checkbox" value="${index}" class="page-checkbox w-5 h-5 text-brand-600 rounded border-gray-300 dark:border-gray-600 focus:ring-brand-500 pointer-events-none" checked>
+                        <label class="text-sm font-medium text-gray-800 dark:text-gray-200 select-none pointer-events-none">หน้า ${pageNum}</label>
                     </div>`;
                 div.addEventListener('click', () => {
                     const cb = div.querySelector('input'); cb.checked = !cb.checked;
-                    if(cb.checked) { div.classList.add('bg-brand-50', 'border-brand-500'); div.classList.remove('bg-white', 'border-gray-100', 'opacity-70'); }
-                    else { div.classList.remove('bg-brand-50', 'border-brand-500'); div.classList.add('bg-white', 'border-gray-100', 'opacity-70'); }
+                    if(cb.checked) { div.classList.add('bg-brand-50', 'border-brand-500', 'dark:bg-brand-900/20'); div.classList.remove('bg-white', 'border-gray-100', 'opacity-70', 'dark:bg-gray-800', 'dark:border-gray-700'); }
+                    else { div.classList.remove('bg-brand-50', 'border-brand-500', 'dark:bg-brand-900/20'); div.classList.add('bg-white', 'border-gray-100', 'opacity-70', 'dark:bg-gray-800', 'dark:border-gray-700'); }
                 });
                 pageGrid.appendChild(div);
             });
@@ -665,10 +712,10 @@
         document.getElementById('cancelModalBtn').addEventListener('click', () => pageSelectModal.classList.add('hidden'));
 
         document.getElementById('selectAllBtn').addEventListener('click', () => {
-            document.querySelectorAll('.page-card').forEach(card => { card.querySelector('input').checked = true; card.classList.add('bg-brand-50', 'border-brand-500'); card.classList.remove('bg-white', 'border-gray-100', 'opacity-70'); });
+            document.querySelectorAll('.page-card').forEach(card => { card.querySelector('input').checked = true; card.classList.add('bg-brand-50', 'border-brand-500', 'dark:bg-brand-900/20'); card.classList.remove('bg-white', 'border-gray-100', 'opacity-70', 'dark:bg-gray-800', 'dark:border-gray-700'); });
         });
         document.getElementById('deselectAllBtn').addEventListener('click', () => {
-            document.querySelectorAll('.page-card').forEach(card => { card.querySelector('input').checked = false; card.classList.remove('bg-brand-50', 'border-brand-500'); card.classList.add('bg-white', 'border-gray-100', 'opacity-70'); });
+            document.querySelectorAll('.page-card').forEach(card => { card.querySelector('input').checked = false; card.classList.remove('bg-brand-50', 'border-brand-500', 'dark:bg-brand-900/20'); card.classList.add('bg-white', 'border-gray-100', 'opacity-70', 'dark:bg-gray-800', 'dark:border-gray-700'); });
         });
 
         confirmSelectionBtn.addEventListener('click', async () => {
