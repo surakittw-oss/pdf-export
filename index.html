@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Tools - THE STANDARD</title>
+    <title>THE STANDARD - PDF Tools (Compress, Merge, Sign, Img to PDF)</title>
     
     <script>
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -21,7 +21,7 @@
     
     <script>
         tailwind.config = {
-            darkMode: 'class', // เปิดโหมด Dark Mode แบบ Class
+            darkMode: 'class', 
             theme: {
                 extend: {
                     colors: {
@@ -107,51 +107,43 @@
 
         <div class="max-w-4xl mx-auto pt-10 px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col">
             <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">ระบบจัดการไฟล์ PDF (ย่อ, รวม, เซ็น)</h2>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">ระบบจัดการไฟล์ PDF (ย่อ, รวม, เซ็น, แปลงรูป)</h2>
                 <p class="text-gray-600 dark:text-gray-400">จัดการไฟล์เอกสารของคุณง่ายๆ ปลอดภัย (ทำงานบนเครื่องของคุณ ไม่ส่งข้อมูลออกภายนอก)</p>
             </div>
 
             <div id="infoSection" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8 transition-all">
                 <div class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all">
-                    <div class="bg-brand-50 dark:bg-brand-900/30 p-3 rounded-full text-brand-500 mb-3">
-                        <i data-lucide="minimize-2" class="w-6 h-6"></i>
-                    </div>
+                    <div class="bg-brand-50 dark:bg-brand-900/30 p-3 rounded-full text-brand-500 mb-3"><i data-lucide="minimize-2" class="w-6 h-6"></i></div>
                     <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm mb-1">ย่อขนาดไฟล์</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">ลดขนาดไฟล์ PDF ให้เล็กลง ส่งต่อง่าย เลือกคุณภาพการบีบอัดได้ตามต้องการ</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">ลดขนาดไฟล์ PDF ให้เล็กลง ส่งต่อง่าย เลือกคุณภาพการบีบอัดได้</p>
                 </div>
                 <div class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all">
-                    <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-full text-blue-500 mb-3">
-                        <i data-lucide="layers" class="w-6 h-6"></i>
-                    </div>
-                    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm mb-1">รวมไฟล์ (Merge)</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">เลือกอัปโหลดหลายไฟล์พร้อมกัน ระบบจะรวมหน้าเอกสารให้เป็นไฟล์เดียวอัตโนมัติ</p>
+                    <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-full text-blue-500 mb-3"><i data-lucide="layers" class="w-6 h-6"></i></div>
+                    <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm mb-1">รวม/แปลงรูปเป็น PDF</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">อัปโหลด PDF หลายไฟล์ หรือรูปภาพ (JPG/PNG) รวมเป็นเล่มเดียว</p>
                 </div>
                 <div class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all">
-                    <div class="bg-amber-50 dark:bg-amber-900/30 p-3 rounded-full text-amber-500 mb-3">
-                        <i data-lucide="pen-tool" class="w-6 h-6"></i>
-                    </div>
+                    <div class="bg-amber-50 dark:bg-amber-900/30 p-3 rounded-full text-amber-500 mb-3"><i data-lucide="pen-tool" class="w-6 h-6"></i></div>
                     <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm mb-1">เซ็นเอกสาร</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">วาดลายเซ็นหรืออัปโหลดรูปภาพ ลากวางและประทับลงบนเอกสารได้ทันที</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">วาดลายเซ็นหรืออัปโหลดรูปภาพ ลากวางและประทับลงบนเอกสารได้</p>
                 </div>
                 <div class="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center hover:shadow-md transition-all">
-                    <div class="bg-green-50 dark:bg-green-900/30 p-3 rounded-full text-green-500 mb-3">
-                        <i data-lucide="image" class="w-6 h-6"></i>
-                    </div>
+                    <div class="bg-green-50 dark:bg-green-900/30 p-3 rounded-full text-green-500 mb-3"><i data-lucide="image" class="w-6 h-6"></i></div>
                     <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm mb-1">ดาวน์โหลดยืดหยุ่น</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">เลือกหน้าก่อนโหลดได้ จะโหลดเป็น PDF ใหม่ หรือแยกหน้าเป็นรูปภาพ (ZIP) ก็ได้</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">เลือกหน้าก่อนโหลดได้ จะโหลดเป็น PDF ใหม่ หรือแยกเป็นรูป (ZIP)</p>
                 </div>
             </div>
 
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden p-8 border border-gray-100 dark:border-gray-700 mb-8 transition-colors">
                 <div id="dropZone" class="drop-zone border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 mb-6">
-                    <input type="file" id="fileInput" accept="application/pdf" multiple class="hidden">
+                    <input type="file" id="fileInput" accept="application/pdf, image/jpeg, image/png" multiple class="hidden">
                     <div class="flex flex-col items-center justify-center space-y-4">
                         <div class="bg-brand-100 dark:bg-brand-900/30 p-4 rounded-full text-brand-500">
                             <i data-lucide="file-plus-2" class="w-10 h-10"></i>
                         </div>
                         <div>
-                            <p class="text-lg font-medium text-gray-700 dark:text-gray-300">คลิกเพื่อเลือกไฟล์ PDF (เลือกได้หลายไฟล์)</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">หรือลากไฟล์ทั้งหมดมาวางตรงนี้เพื่อเริ่มงาน</p>
+                            <p class="text-lg font-medium text-gray-700 dark:text-gray-300">คลิกเลือกไฟล์ PDF หรือ รูปภาพ (JPG, PNG)</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">สามารถเลือกหลายไฟล์พร้อมกันเพื่อรวมไฟล์ได้</p>
                         </div>
                     </div>
                 </div>
@@ -251,12 +243,12 @@
             </div>
 
             <footer class="mt-auto py-6 text-center text-xs text-gray-400 dark:text-gray-500 font-medium">
-                &copy; 2026 Webmaster, Digital Platform Management | THE STANDARD
+                &copy; 2026 webmaster, digital platform management | THE STANDARD
             </footer>
         </div>
     </div>
 
-    <div id="signModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm p-2 sm:p-4">
+    <div id="signModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm p-2 sm:p-4 transition-opacity">
         <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-6xl flex flex-col h-[95vh] shadow-2xl overflow-hidden transition-colors">
             <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900 shrink-0">
                 <div class="flex items-center gap-3">
@@ -356,7 +348,7 @@
         // ---------------------------------------------------------
         // 0. Theme Toggle Logic
         // ---------------------------------------------------------
-        lucide.createIcons(); // Initialize icons first
+        lucide.createIcons();
 
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const themeToggleIcon = document.getElementById('themeToggleIcon');
@@ -370,7 +362,6 @@
             lucide.createIcons();
         }
 
-        // Set initial icon
         updateThemeIcon();
 
         themeToggleBtn.addEventListener('click', () => {
@@ -382,7 +373,6 @@
             }
             updateThemeIcon();
         });
-
 
         // ---------------------------------------------------------
         // 1. Google Authentication
@@ -423,7 +413,7 @@
         });
 
         // ---------------------------------------------------------
-        // 2. Core App State & File Logic (Multiple Files / Merge)
+        // 2. Core App State & File Logic (Support PDF & Images)
         // ---------------------------------------------------------
         let currentFiles = []; 
         let compressedImages = []; 
@@ -438,7 +428,6 @@
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        // DOM Setup for File Upload
         const dropZone = document.getElementById('dropZone'), fileInput = document.getElementById('fileInput'), fileInfo = document.getElementById('fileInfo'), fileListUI = document.getElementById('fileListUI'), totalSizeTxt = document.getElementById('totalSizeTxt'), addMoreFilesBtn = document.getElementById('addMoreFilesBtn'), removeFileBtn = document.getElementById('removeFileBtn'), actionArea = document.getElementById('actionArea'), compressBtn = document.getElementById('compressBtn'), compressBtnText = document.getElementById('compressBtnText'), progressArea = document.getElementById('progressArea'), progressBar = document.getElementById('progressBar'), progressText = document.getElementById('progressText'), resultArea = document.getElementById('resultArea'), oldSizeTxt = document.getElementById('oldSizeTxt'), newSizeTxt = document.getElementById('newSizeTxt'), resetBtn = document.getElementById('resetBtn'), infoSection = document.getElementById('infoSection');
 
         dropZone.addEventListener('click', () => fileInput.click());
@@ -454,19 +443,20 @@
         function handleFilesSelect(files) {
             let validFilesAdded = false;
             for (let i = 0; i < files.length; i++) {
-                if (files[i].type === 'application/pdf') {
+                // อนุญาตทั้ง PDF และไฟล์รูปภาพ (JPEG, PNG)
+                if (files[i].type === 'application/pdf' || files[i].type.startsWith('image/')) {
                     currentFiles.push(files[i]);
                     validFilesAdded = true;
                 }
             }
             
             if (!validFilesAdded && currentFiles.length === 0) {
-                alert('กรุณาเลือกไฟล์ PDF เท่านั้นครับ'); return;
+                alert('กรุณาเลือกไฟล์ PDF หรือรูปภาพ (JPG, PNG) เท่านั้นครับ'); return;
             }
 
             renderFileListUI();
             
-            infoSection.classList.add('hidden'); // ซ่อน Info section
+            infoSection.classList.add('hidden'); 
             dropZone.classList.add('hidden'); 
             fileInfo.classList.remove('hidden'); 
             actionArea.classList.remove('hidden'); 
@@ -478,25 +468,29 @@
             let totalBytes = 0;
             currentFiles.forEach((f, idx) => {
                 totalBytes += f.size;
+                // เปลี่ยนไอคอนตามประเภทไฟล์
+                const iconType = f.type.startsWith('image/') ? 'image' : 'file-text';
+                const iconColor = f.type.startsWith('image/') ? 'text-blue-500' : 'text-brand-400';
+                
                 fileListUI.innerHTML += `
                     <li class="flex justify-between items-center bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-brand-100 dark:border-gray-600 shadow-sm">
-                        <span class="truncate pr-2 font-medium text-gray-800 dark:text-gray-200"><i data-lucide="file-text" class="w-4 h-4 inline text-brand-400 mr-2"></i>${f.name}</span> 
+                        <span class="truncate pr-2 font-medium text-gray-800 dark:text-gray-200"><i data-lucide="${iconType}" class="w-4 h-4 inline ${iconColor} mr-2"></i>${f.name}</span> 
                         <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">${formatBytes(f.size)}</span>
                     </li>`;
             });
             totalSizeTxt.textContent = `ขนาดรวมก่อนประมวลผล: ${formatBytes(totalBytes)} | ${currentFiles.length} ไฟล์`;
-            compressBtnText.textContent = currentFiles.length > 1 ? `เริ่มรวม ${currentFiles.length} ไฟล์ & ประมวลผล` : `เริ่มประมวลผลไฟล์`;
+            compressBtnText.textContent = currentFiles.length > 1 ? `เริ่มประมวลผลและรวม ${currentFiles.length} ไฟล์` : `เริ่มประมวลผลไฟล์`;
             lucide.createIcons();
         }
 
         function resetUI() {
             currentFiles = []; compressedImages = []; unscaledFormats = []; hasUnsavedSignatures = false; fileInput.value = '';
-            infoSection.classList.remove('hidden'); // โชว์ Info section กลับมา
+            infoSection.classList.remove('hidden');
             dropZone.classList.remove('hidden'); fileInfo.classList.add('hidden'); actionArea.classList.add('hidden'); progressArea.classList.add('hidden'); resultArea.classList.add('hidden'); progressBar.style.width = '0%'; progressText.textContent = '';
         }
 
         // ---------------------------------------------------------
-        // 3. Compress & Merge PDF Logic
+        // 3. Compress, Merge PDF & Process Images Logic
         // ---------------------------------------------------------
         compressBtn.addEventListener('click', async () => {
             if (currentFiles.length === 0) return;
@@ -511,27 +505,61 @@
 
                 for (let fileIdx = 0; fileIdx < currentFiles.length; fileIdx++) {
                     const file = currentFiles[fileIdx];
-                    const arrayBuffer = await file.arrayBuffer();
-                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    const numPages = pdf.numPages;
 
-                    for (let i = 1; i <= numPages; i++) {
-                        const progress = Math.round(((fileIdx + (i / numPages)) / currentFiles.length) * 100);
+                    // --- กรณีไฟล์ PDF ---
+                    if (file.type === 'application/pdf') {
+                        const arrayBuffer = await file.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                        const numPages = pdf.numPages;
+
+                        for (let i = 1; i <= numPages; i++) {
+                            const progress = Math.round(((fileIdx + (i / numPages)) / currentFiles.length) * 100);
+                            progressBar.style.width = `${progress}%`;
+                            progressText.textContent = `กำลังโหลดไฟล์ PDF ${fileIdx + 1}/${currentFiles.length} (หน้า ${i}/${numPages})...`;
+
+                            const page = await pdf.getPage(i);
+                            const unscaledViewport = page.getViewport({ scale: 1.0 });
+                            const renderViewport = page.getViewport({ scale: settings.scale });
+
+                            unscaledFormats.push({ w: unscaledViewport.width, h: unscaledViewport.height, orientation: unscaledViewport.width > unscaledViewport.height ? 'l' : 'p' });
+
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = renderViewport.width; canvas.height = renderViewport.height;
+
+                            await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
+                            compressedImages.push(canvas.toDataURL('image/jpeg', settings.jpegQuality));
+                        }
+                    } 
+                    // --- กรณีไฟล์รูปภาพ (JPG, PNG) ---
+                    else if (file.type.startsWith('image/')) {
+                        const progress = Math.round(((fileIdx + 1) / currentFiles.length) * 100);
                         progressBar.style.width = `${progress}%`;
-                        progressText.textContent = `กำลังโหลดไฟล์ ${fileIdx + 1}/${currentFiles.length} (หน้า ${i}/${numPages})...`;
+                        progressText.textContent = `กำลังโหลดรูปภาพ ${fileIdx + 1}/${currentFiles.length}...`;
 
-                        const page = await pdf.getPage(i);
-                        const unscaledViewport = page.getViewport({ scale: 1.0 });
-                        const renderViewport = page.getViewport({ scale: settings.scale });
+                        const imgUrl = URL.createObjectURL(file);
+                        const img = new Image();
+                        await new Promise((resolve, reject) => {
+                            img.onload = resolve;
+                            img.onerror = reject;
+                            img.src = imgUrl;
+                        });
 
-                        unscaledFormats.push({ w: unscaledViewport.width, h: unscaledViewport.height, orientation: unscaledViewport.width > unscaledViewport.height ? 'l' : 'p' });
+                        // บันทึกสัดส่วนภาพต้นฉบับ เพื่อให้หน้า PDF ใหม่มีขนาดพอดีกับรูปเป๊ะๆ
+                        unscaledFormats.push({ w: img.width, h: img.height, orientation: img.width > img.height ? 'l' : 'p' });
 
+                        // วาดรูปลง Canvas เพื่อทำการบีบอัดให้เป็น JPEG ตาม Quality ที่ผู้ใช้เลือก
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        canvas.width = renderViewport.width; canvas.height = renderViewport.height;
+                        canvas.width = img.width; canvas.height = img.height;
+                        
+                        // ถ้ารูปเป็น PNG ใสๆ ให้เทพื้นหลังสีขาวก่อน
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, img.width, img.height);
 
-                        await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
                         compressedImages.push(canvas.toDataURL('image/jpeg', settings.jpegQuality));
+                        URL.revokeObjectURL(imgUrl);
                     }
                 }
 
@@ -686,8 +714,8 @@
                 const div = document.createElement('div');
                 div.className = 'page-card relative flex flex-col p-2 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md bg-brand-50 dark:bg-brand-900/20 border-brand-500 dark:border-brand-500';
                 div.innerHTML = `
-                    <div class="relative w-full aspect-[1/1.4] bg-white rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 mb-3 pointer-events-none">
-                        <img src="${imgData}" class="w-full h-full object-contain pointer-events-none">
+                    <div class="relative w-full aspect-[1/1.4] bg-white rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 mb-3 pointer-events-none flex items-center justify-center">
+                        <img src="${imgData}" class="max-w-full max-h-full object-contain pointer-events-none">
                     </div>
                     <div class="flex items-center justify-center gap-2 pointer-events-none">
                         <input type="checkbox" value="${index}" class="page-checkbox w-5 h-5 text-brand-600 rounded border-gray-300 dark:border-gray-600 focus:ring-brand-500 pointer-events-none" checked>
